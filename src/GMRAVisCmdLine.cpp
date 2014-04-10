@@ -107,7 +107,9 @@ int main(int argc, char **argv){
   std::string lFileName = lArg.getValue();
   std::string xFileName = xArg.getValue();
 
+  std::cout << "read matrix" << std::endl;
   DenseMatrix<double> X = LinalgIO<double>::readMatrix(xFileName);
+  std::cout << "read vector" << std::endl;
   DenseVector<int> labels = LinalgIO<int>::readVector(lFileName);
 
   IPCATree<double> ipcaTree;
@@ -116,20 +118,15 @@ int main(int argc, char **argv){
   ipcaTree.unflatten(treeFile);
   treeFile.close();
 
-
+  // Create the data structure
   Data<double> data(ipcaTree, labels, X);
-
 
   //GL stuff
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB|GLUT_DOUBLE);
 
-
   //Windows
   display = new GMRAVis<double>(font, data);
-         
-
-
   
   glutInitWindowSize(900, 900); 
   int mainWindow = glutCreateWindow(display->title().c_str());
@@ -142,10 +139,6 @@ int main(int argc, char **argv){
   glutKeyboardFunc(keyboard1);
   glutSpecialFunc(special1);
   display->init();
-
-
-  printHelp();
-
 
   glutMainLoop();
 

@@ -14,119 +14,115 @@
 
 #include "Font.h"
 
-
+// + + + + + + + + + + + + + + //
+// The scatter plot
+// + + + + + + + + + + + + + + //
 template<typename TPrecision>
 class ProjectionDEL : public DisplayElement{
-
-  private:
-
-
+  
+private:
+  
 #define BUFSIZE 512
+  
+  
+  int size; 
+  
+  int xM, yM;
+  int mod, cur_button; 
+  int pickH, pickW;  
+  float alpha;
+
+  Data<TPrecision> &data;
+  
+public:
+
+  //--- Constructor ---//
+  ProjectionDEL(Data<TPrecision> &d) 
+    : DisplayElement(), data(d){ 
+    pickW = 5;
+    pickH = 5;
+    alpha = 0.1;
+  };
 
 
-    int size; 
+  //--- Set the location of the scatterplot ---//
+  void location(int xPos, int yPos, int w, int h){
+    width = w;
+    height = h;
+    xLeft = xPos;
+    yTop = yPos;
+    size = std::min(w, h)/2 ;
+  };
 
-    int xM, yM;
-    int mod, cur_button; 
-    int pickH, pickW;  
-    float alpha;
+  void init(){ };
 
-    Data<TPrecision> &data;
+  //--- Display the scatterplot ---//
+  void display(void){
+    glMatrixMode(GL_MODELVIEW); 	
+    glLoadIdentity();
+    
+    //glPushName(-1); 
+    glPointSize(6);
+    int x1;
+    int x2;
+    float col[4];
+    col[3] = alpha;
 
+    // Draw the axes
+    glLineWidth(1);
+    glColor3f(0.75, 0.75, 0.75);
+    glBegin(GL_LINES);
+    glVertex2f( toScreenX( - 1.25), toScreenY( 0 ) );
+    glVertex2f( toScreenX( + 1.25), toScreenY( 0 ) );
+    glVertex2f( toScreenX( 0 ), toScreenY( - 1.25) );
+    glVertex2f( toScreenX( 0 ), toScreenY( + 1.25) );
+    glEnd();
+      
+    if(data.selectedNode != -1){
 
-  public:
-
-    ProjectionDEL(Data<TPrecision> &d) 
-      : data(d){ 
-        pickW = 5;
-        pickH = 5;
-        alpha = 0.1;
-      };
-
-
-
-    void location(int xPos, int yPos, int w, int h){
-      width = w;
-      height = h;
-      xLeft = xPos;
-      yTop = yPos;
-      size = std::min(w, h)/2 ;
-    };
-
-
-
-    void init(){  
-
-    };
-
-
-    void display(void){
-
-      if(data.selectedNode != -1){
-        glMatrixMode(GL_MODELVIEW); 	
-        glLoadIdentity();
-
-        //glPushName(-1); 
-        glPointSize(6);
-        int x1;
-        int x2;
-        float col[4];
-        col[3] = alpha;
-
-
-        std::vector<int> pts = data.nodeMap[data.selectedNode]->getPoints();
-
-        glLineWidth(2);
-        glColor3f(0.75, 0.75, 0.75);
-        glBegin(GL_LINES);
-        glVertex2f( toScreenX( - 0.25), toScreenY( 0 ) );
-        glVertex2f( toScreenX( + 0.25), toScreenY( 0 ) );
-        glVertex2f( toScreenX( 0 ), toScreenY( - 0.25) );
-        glVertex2f( toScreenX( 0 ), toScreenY( + 0.25) );
-        glEnd();
-
-        glBegin(GL_POINTS);
-        for(int i=0; i<data.P.N(); i++){
-          x1 = toScreenX(data.P(0,i));
-          x2 = toScreenY(data.P(1,i));
-
-          if(data.labels(pts[i]) == 0){
-            glColor4f(0, 0.25, 1, alpha);
-          }
-          else{	  
-            glColor4f(1, 0.45, 0, alpha);
-          }
-          glVertex2f(x1, x2);
-
-        }
-        glEnd();
-
-
-
-        if(isInside(xM, yM)){
-          //draw pick rectangle
-          glColor4f(0.75, 0.75, 0.75, 0.75);
-          glLineWidth(2);
-          double pw = pickW / 2.0;
-          double ph = pickH / 2.0;
-          glBegin(GL_LINE_LOOP);
-          glVertex2f(xM-pw, yM-ph);
-          glVertex2f(xM+pw, yM-ph);
-          glVertex2f(xM+pw, yM+ph);
-          glVertex2f(xM-pw, yM+ph);
-          glEnd();
-        }
-
+      std::vector<int> pts = data.nodeMap[data.selectedNode]->getPoints();
+      
+      glBegin(GL_POINTS);
+      for(int i=0; i<data.P.N(); i++){
+	
+	// Convert the points to screen coordinates
+	x1 = toScreenX(data.P(0,i));
+	x2 = toScreenY(data.P(1,i));
+	
+	// Color the point based on it's label
+	/*	if(data.labels(pts[i]) == 0){
+	  glColor4f(0, 0.25, 1, alpha);
+	}
+	else{	  
+	  glColor4f(1, 0.45, 0, alpha);
+	  }*/
+	Tuple labelColor = data.labelsColor.getColor(data.labels(pts[i]));
+	glColor4f(labelColor.r, labelColor.g, labelColor.b, alpha);
+	
+	// Draw the point
+	glVertex2f(x1, x2);
       }
-    };
+      glEnd();
 
-    void reshape(int w, int h){
+      if(isInside(xM, yM)){
+	//draw pick rectangle
+	glColor4f(0.75, 0.75, 0.75, 0.75);
+	glLineWidth(2);
+	double pw = pickW / 2.0;
+	double ph = pickH / 2.0;
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(xM-pw, yM-ph);
+	glVertex2f(xM+pw, yM-ph);
+	glVertex2f(xM+pw, yM+ph);
+	glVertex2f(xM-pw, yM+ph);
+	glEnd();
+      }
+    }
+  };
+  
+  void reshape(int w, int h){};    
 
-    };    
-
-    void idle(){
-
-    };
+  void idle(){};
 
 
     void keyboard(unsigned char key, int x, int y){

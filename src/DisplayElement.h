@@ -19,11 +19,25 @@
 
 class  DisplayElement{
 
-public:
+ protected:
+  float backgroundColor[3];
+  
+ public:
 
   int xLeft, yTop, width, height;
+  int windowWidth, windowHeight;
+  int pickH, pickW;
+  
+ //--- Constructor ---//
+  DisplayElement() {
+    windowWidth = -1;
+    windowHeight = -1;   
+    init();
+  }
 
   virtual ~DisplayElement(){};
+
+ virtual void init(){};
 
   virtual void location(int x, int y, int w, int h) = 0;
 
@@ -49,6 +63,11 @@ public:
            y>yTop && y < (yTop+height) ;
   };
 
+ void setBackgroundColor(float color[3]){
+    backgroundColor[0] = color[0];
+    backgroundColor[1] = color[1];
+    backgroundColor[2] = color[2];
+  }
 
 };
 

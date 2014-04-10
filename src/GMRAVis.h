@@ -16,6 +16,7 @@
 #include "ProjectionDEL.h"
 #include "MultiscaleProjectionDEL.h"
 #include "ColorLegendDEL.h"
+#include "ParallelDEL.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -40,27 +41,24 @@ class GMRAVis : public Display{
 
 
     std::list<DisplayElement *> elements;
-    
-    Font &font;
-    
-
     Animator animator;
 
-  public:
-
-    GMRAVis(Font &f, Data<TPrecision> &d) : font(f), data(d){ 
-      pickH = 5;
-      pickW = 5;
+public:
+  
+  //--- Constructor ---//
+  GMRAVis(Font &f, Data<TPrecision> &d) : Display(f), data(d){ 
+    pickH = 5;
+    pickW = 5;
     };
-
-
-
+  
+  
+  //--- Return the display title ---//
     std::string title(){
       return "IPCA GMRA Visualization";
     };
 
 
-
+  //--- Reshape the display ---//
     void reshape(int w, int h){
       width = w;
       height = h;
@@ -81,51 +79,58 @@ class GMRAVis : public Display{
     };
 
 
-
-    void setupDisplay(){
-      //setup display elements
-
-      for(std::list<DisplayElement *>::iterator it = elements.begin(); it !=
-          elements.end(); ++it){
-         delete (*it);
-      }
-
-      elements.clear();
-
-   
-      TreeDEL<TPrecision> *pd = new TreeDEL<TPrecision>(data);
-      pd->location(10, 10, 800, 200);
-      elements.push_back(pd);
+  //--- Set up the display ---//
+  void setupDisplay(){
+    
       
-      /*
+    // Set the background color
+    setBackgroundColor(0.15, 0.15, 0.15);
+    
+    // Clear display elements
+    for(std::list<DisplayElement *>::iterator it = elements.begin(); it !=
+          elements.end(); ++it){
+      delete (*it);
+    }
+    elements.clear();
+
+    // Add the icicle tree
+    TreeDEL<TPrecision> *pd = new TreeDEL<TPrecision>(data);
+    pd->location(10, 10, 800, 200);
+    elements.push_back(pd);
+     
+    // Add the color legend for the tree
+    ColorLegendDEL<TPrecision> *cld =  new ColorLegendDEL<TPrecision>(data.treeColor);
+    cld->location(820, 10, 20, 200);
+    elements.push_back(cld);
+    
+    // The scatter plot
+    ProjectionDEL<TPrecision> *pDel = new ProjectionDEL<TPrecision>(data);
+    pDel->location(450, 320, 350, 350);
+    elements.push_back(pDel);
+      
+    // The parallel coordinates plot
+    ParallelDEL<TPrecision> * pc = new ParallelDEL<TPrecision>(data);
+    pc->location(250, 500, 500, 200);
+    elements.push_back(pc);
+
+    // The ellipses
+    MultiscaleProjectionDEL<TPrecision> *projectionDel = new
+      MultiscaleProjectionDEL<TPrecision>(data, animator);
+    projectionDel->location(10, 220, 400, 400);
+    elements.push_back(projectionDel);
+
+    /*
       ZoomTreeDEL<TPrecision> *ztd = new ZoomTreeDEL<TPrecision>(data);
       ztd->location(10, 320, 350, 350);
       elements.push_back(ztd);
-
- */
-
-
-      ColorLegendDEL<TPrecision> *cld =  new ColorLegendDEL<TPrecision>(data.treeColor);
-      cld->location(820, 10, 20, 200);
-      elements.push_back(cld);
-
-
-     /* PatchDEL<TPrecision> *patchDel = new PatchDEL<TPrecision>(data);
-      patchDel->location(550, 420, 400, 400);
-      elements.push_back(patchDel);*/
-
-      
-      ProjectionDEL<TPrecision> *pDel = new ProjectionDEL<TPrecision>(data);
-      pDel->location(450, 320, 350, 350);
-      elements.push_back(pDel);
-      
-
-      MultiscaleProjectionDEL<TPrecision> *projectionDel = new
-        MultiscaleProjectionDEL<TPrecision>(data, animator);
-      projectionDel->location(10, 220, 400, 400);
-      elements.push_back(projectionDel);
-
-/*
+    */
+    
+    /* PatchDEL<TPrecision> *patchDel = new PatchDEL<TPrecision>(data);
+       patchDel->location(550, 420, 400, 400);
+       elements.push_back(patchDel);
+    */
+ 
+    /*
       SinglePatchDEL<TPrecision> *spatchDel = new SinglePatchDEL<TPrecision>(data);
       spatchDel->location(750, 320, 100, 100);
       elements.push_back(spatchDel);
@@ -133,148 +138,104 @@ class GMRAVis : public Display{
       SinglePatchReconstructDEL<TPrecision> *srpatchDel = new SinglePatchReconstructDEL<TPrecision>(data);
       srpatchDel->location(750, 430, 100, 100);
       elements.push_back(srpatchDel);
-*/
-
+    */
       
     }
-
-    void init(){  
-      glClearColor(0.15, 0.15, 0.15, 0);
-      glEnable(GL_POLYGON_SMOOTH);
-      glEnable(GL_LINE_SMOOTH);
-      glEnable( GL_POINT_SMOOTH );
-      glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glEnable(GL_BLEND);
+  
+  //--- Initialize the display ---//
+  void init(){  
+    glClearColor(0.15, 0.15, 0.15, 0);
+    glEnable(GL_POLYGON_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable( GL_POINT_SMOOTH );
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    //glutSetCursor(GLUT_CURSOR_CROSSHAIR);
+    setupDisplay(); 
+  };
+  
+  //--- Actions to take on display ---//
+  void display(void){
       
-
-      //glutSetCursor(GLUT_CURSOR_CROSSHAIR);
-   
-      setupDisplay(); 
- 
-    };
-
-
-
-    void printHelp(){
-
-       std::cout << "Usage" << std::endl;
-       std::cout << "------------------" << std::endl;
-
-    };
-
-
-
-
-    void display(void){
-
-      glMatrixMode(GL_MODELVIEW); 	
-      glLoadIdentity();
-
-      
-      // set background to white if user changes it
-      if(whiteBackground)
-        glClearColor(1.00, 1.00, 1.00, 0);
-      else
-        glClearColor(0.15, 0.15, 0.15, 0);
-
-      glClear(GL_COLOR_BUFFER_BIT);
-      
-      for(std::list<DisplayElement *>::iterator it=elements.begin(); 
-           it != elements.end(); ++it){
-         (*it)->display();
-      }
+    // Set background color
+    if(whiteBackground)
+      glClearColor(1.00, 1.00, 1.00, 0);
+    else
+      glClearColor(backgroundColor[0], backgroundColor[1], backgroundColor[2], 0);
     
-      glutSwapBuffers();
-
-    };
-
-
+    // Clear the color buffer
+    glClear(GL_COLOR_BUFFER_BIT);
     
+    // Set the modelview matrix
+    glMatrixMode(GL_MODELVIEW); 	
+    glLoadIdentity();
+    
+    // Show all display elements
+    for(std::list<DisplayElement *>::iterator it=elements.begin(); 
+	it != elements.end(); ++it){
+      (*it)->display();
+    }
+    
+    // Swap buffers
+    glutSwapBuffers();
+  };
 
-    void idle(){
-      animator.step();
-    };
+  //--- On idle, animate ---//
+  void idle(){
+    animator.step();
+  };
 
+  //--- Actions to take on keystrokes ---//
+  void keyboard(unsigned char key, int x, int y){
+    Display::keyboard(key, x, y);
+    
+    for(std::list<DisplayElement *>::iterator it=elements.begin(); 
+	it != elements.end(); ++it){
+      (*it)->keyboard(key, x, y);
+    }
+    glutPostRedisplay();
+  } 
+  
+  //--- Special actions ---//
+  void special(int key, int x, int y){
+    for(std::list<DisplayElement *>::iterator it=elements.begin(); 
+	it != elements.end(); ++it){
+      (*it)->special(key, x, y);
+    }
+    glutPostRedisplay();
+  };
+  
+  void mouse(int button, int state, int x, int y){
+    xM = x;
+    yM = y;
+    for(std::list<DisplayElement *>::iterator it=elements.begin(); 
+	it != elements.end(); ++it){
+      (*it)->mouse(button, state, x, y);
+    }
+    glutPostRedisplay();
+  };
 
+  void motion(int x, int y){
+    for(std::list<DisplayElement *>::iterator it=elements.begin(); 
+	it != elements.end(); ++it){
+      (*it)->motion(x, y);
+    }
+    glutPostRedisplay();
+  };
 
+  void passive(int x, int y){
+    xM = x;
+    yM = y;
+    
+    for(std::list<DisplayElement *>::iterator it=elements.begin(); 
+	it != elements.end(); ++it){
+      (*it)->passive(x, y);
+    }
+    glutPostRedisplay();
+  };
 
-
-    void keyboard(unsigned char key, int x, int y){
-      switch(key){
-
-        case 'h':
-	case 'H':
-	  printHelp();
-	  break;
-	
-  // toggle background color between white and black
-	case 'b':
-	case 'B':
-	  if(whiteBackground)
-	    whiteBackground = false;
-	  else
-	    whiteBackground = true;
-	  break;
-      }
-      for(std::list<DisplayElement *>::iterator it=elements.begin(); 
-         it != elements.end(); ++it){
-         (*it)->keyboard(key, x, y);
-      }
-      glutPostRedisplay();
-    };
-
-
-
-    void special(int key, int x, int y){
-
-      for(std::list<DisplayElement *>::iterator it=elements.begin(); 
-         it != elements.end(); ++it){
-         (*it)->special(key, x, y);
-      }
-      glutPostRedisplay();
-    };
-
-
-
-
-    void mouse(int button, int state, int x, int y){
-      xM = x;
-      yM = y;
-      for(std::list<DisplayElement *>::iterator it=elements.begin(); 
-         it != elements.end(); ++it){
-         (*it)->mouse(button, state, x, y);
-      }
-      glutPostRedisplay();
-
-    };
-
-
-
-    void motion(int x, int y){
-     for(std::list<DisplayElement *>::iterator it=elements.begin(); 
-         it != elements.end(); ++it){
-         (*it)->motion(x, y);
-      }
-      glutPostRedisplay();
-    };
-
-
-
-
-    void passive(int x, int y){
-      xM = x;
-      yM = y;
-
-      for(std::list<DisplayElement *>::iterator it=elements.begin(); 
-         it != elements.end(); ++it){
-         (*it)->passive(x, y);
-      }
-      glutPostRedisplay();
-
-    };
-
-
+  
 
 
 

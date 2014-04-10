@@ -25,19 +25,23 @@ class LinalgIO{
   
   //Read Vector from header file
   static DenseVector<TPrecision> readVector(const std::string &filename){
+   
+ 
     std::ifstream hdr;
     hdr.open(filename.c_str());
     
     std::string token;
     getline(hdr, token);
+    std::cout << "toekn: "<< token << std::endl;
     if(token.compare("DenseVector") != 0){
       throw "Not a vector header file";
     }
+    
 
     getline(hdr, token, ' ');
     getline(hdr, token);
     int size = atoi(token.c_str());
-
+    std::cout << "size: " << size << std::endl;
     getline(hdr, token, ' ');
     getline(hdr, token);
     int elemSize = atoi(token.c_str());
@@ -56,7 +60,6 @@ class LinalgIO{
     }
     ss << token;
 
-
     readVector(ss.str(), vector);
 
     return vector;
@@ -70,6 +73,7 @@ class LinalgIO{
     file.open(filename.c_str(), std::ios::binary);
     file.read((char*)vector.data(), sizeof(TPrecision)*vector.N());
 
+
     if(file.fail()){
       std::cout << "Reading failed" << std::endl;
       // get length of file:
@@ -81,6 +85,7 @@ class LinalgIO{
       return false;  
     }  
     file.close();
+  
     return true;
   };
 
@@ -120,6 +125,9 @@ class LinalgIO{
 
   //Read matrix from header file
   static DenseMatrix<TPrecision> readMatrix(const std::string &filename){
+
+    std::cout << "filename: " << filename << std::endl;
+
     std::ifstream hdr;
     hdr.open(filename.c_str());
     
@@ -127,7 +135,7 @@ class LinalgIO{
     getline(hdr, token);
     if(token.compare("DenseMatrix") != 0){
       throw "Not a matrix header file";
-    }
+     }
 
     getline(hdr, token, ' ');
     getline(hdr, token, ' ');
@@ -141,7 +149,7 @@ class LinalgIO{
     int elemSize = atoi(token.c_str());
     if(elemSize != sizeof(TPrecision)){
       throw "Element size not equal to size of matrix precision";
-    }
+     }
 
     getline(hdr, token, ' ');
     getline(hdr, token);

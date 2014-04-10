@@ -13,7 +13,72 @@
 #include <vector>
 #include <iostream>
 
+class Tuple{
+public:
+  Tuple(): r(0.0), g(0.0), b(0.0){}
 
+  Tuple(float _first, float _second, float _third){
+    r = _first; g = _second; b = _third;
+  }
+  Tuple(int _first, int _second, int _third){
+    r = (float)_first/255.f; g = (float)_second/255.f; b = (float)_third/255.f;
+  }
+  Tuple(const Tuple& t){
+    r = t.r;
+    g = t.g;
+    b = t.b;
+  }
+
+  float x(){ return r; }
+  float y(){ return g; }
+  float z(){ return b; }
+  
+  void print(){
+    std::cout << "(" << r << ", " << g << ", " << b << ",)" << std::endl;
+  }
+
+  float r, g, b;
+};
+
+template<class T>
+class DiscreteColorMapper{
+
+protected:
+  std::vector<Tuple> colors;
+  std::vector<Tuple> colormap;
+ 
+public:
+  DiscreteColorMapper(){
+    colors.push_back(Tuple(228,26,28));
+    colors.push_back(Tuple(55,126,184));
+    colors.push_back(Tuple(77,175,74));
+    colors.push_back(Tuple(152,78,163));
+    colors.push_back(Tuple(255,127,0));
+    colors.push_back(Tuple(255,255,51));
+    colors.push_back(Tuple(166,86,40));
+    colors.push_back(Tuple(247,129,191));
+    colors.push_back(Tuple(153,153,153));
+    set(9);
+  }
+
+  void set(int numColors){
+    if(numColors > 9){
+      std::cout << "ERROR!  MORE THAN 9 COLORS - ADD MORE COLORS TO MAP!!" << std::endl;
+      exit(0);
+    }
+    else{
+      for(int i = 0; i < numColors; i++)
+	colormap.push_back(colors[i]);
+    }
+  }
+  
+  Tuple getColor(int value){
+    if(value > colormap.size()) // return black if out of range
+      return Tuple(0.f, 0.f, 0.f);
+    else
+      return colormap[value];
+  }
+};
 
 template<class T>
 class ColorMapper
@@ -51,8 +116,6 @@ class ColorMapper
     rangeMid = cm.rangeMid;
     rangeMin = cm.rangeMin;
     rangeMax = cm.rangeMax;
-    
-
     return *this;
   }
 
@@ -75,6 +138,19 @@ class ColorMapper
     bmid = Bmid;
     bmax = Bmax;
   };
+
+  void set(T Rmin, T Rmax, T Gmin, T Gmax, T Bmin, T Bmax){
+    rmin = Rmin;
+    rmax = Rmax;
+    gmin = Gmin;
+    gmax = Gmax;
+    bmin = Bmin;
+    bmax = Bmax;
+
+    rmid = (Rmin + Rmax) * 0.5;
+    gmid = (Gmin + Gmax) * 0.5;
+    bmid = (Bmin + Bmax) * 0.5;
+  } 
 
   void setRange(T rmin, T rmid, T rmax){
     rangeMin = rmin;
@@ -112,6 +188,14 @@ class ColorMapper
   
 
   void getColor(T value, T color[3]){
+
+    /*std::cout << "Red: " << rmin << ", " << rmid << ", " << rmax << std::endl;
+    std::cout << "Green: " << gmin << ", " << gmid << ", " << gmax << std::endl;
+    std::cout << "Blue: " << bmin << ", " << bmid << ", " << bmax << std::endl;
+    */
+
+    //  std::cout << "value: " << value << " rangeMin: " << rangeMin << " rangeMid: " << rangeMid << " rangeMax: " << rangeMax << std::endl;
+
     if(value < rangeMid){
      color[0] = affine(value, rangeMin, rangeMid, rmin, rmid);
      color[1] = affine(value, rangeMin, rangeMid, gmin, gmid);
