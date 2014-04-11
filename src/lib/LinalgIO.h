@@ -19,29 +19,24 @@ namespace FortranLinalg{
 template <typename TPrecision>
 class LinalgIO{
 
-
   public:
 
-  
   //Read Vector from header file
   static DenseVector<TPrecision> readVector(const std::string &filename){
    
- 
     std::ifstream hdr;
     hdr.open(filename.c_str());
     
+
     std::string token;
     getline(hdr, token);
-    std::cout << "toekn: "<< token << std::endl;
     if(token.compare("DenseVector") != 0){
       throw "Not a vector header file";
     }
     
-
     getline(hdr, token, ' ');
     getline(hdr, token);
     int size = atoi(token.c_str());
-    std::cout << "size: " << size << std::endl;
     getline(hdr, token, ' ');
     getline(hdr, token);
     int elemSize = atoi(token.c_str());
@@ -75,13 +70,12 @@ class LinalgIO{
 
 
     if(file.fail()){
-      std::cout << "Reading failed" << std::endl;
+
       // get length of file:
       file.seekg (0, std::ios::beg);
       file.seekg (0, std::ios::end);
       long length = file.tellg();
       file.seekg (0, std::ios::beg);
-      std::cout << length << std::endl;
       return false;  
     }  
     file.close();
@@ -126,11 +120,9 @@ class LinalgIO{
   //Read matrix from header file
   static DenseMatrix<TPrecision> readMatrix(const std::string &filename){
 
-    std::cout << "filename: " << filename << std::endl;
-
     std::ifstream hdr;
     hdr.open(filename.c_str());
-    
+
     std::string token;
     getline(hdr, token);
     if(token.compare("DenseMatrix") != 0){

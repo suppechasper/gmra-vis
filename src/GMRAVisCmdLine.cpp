@@ -10,10 +10,8 @@
 #include "IPCATree.h"
 
 #include "CmdLine.h"
-
+#include <StdOutput.h>
 #include "GlutStrokeFont.h"
-
-
 
 #define MAKE_STRING_(x) #x
 #define MAKE_STRING(x) MAKE_STRING_(x)
@@ -54,8 +52,6 @@ void reshape1(int w, int h){
   display->reshape(w, h);
 }
 
-
-
 void visible(int vis)
 {
     if (vis == GLUT_VISIBLE)
@@ -71,27 +67,32 @@ void printHelp(){
 }
 
 
-
-
-
 int main(int argc, char **argv){	
-        using namespace FortranLinalg;
-   //Command line parsing
+  using namespace FortranLinalg;
+  
+  // Command line arguments
   TCLAP::CmdLine cmd("GMRA Wasserstein distance visualization", ' ', "1");
-
+  
+  // Read in a config file
+  TCLAP::ValueArg<std::string> cArg("c", "config", "Config file", false,  "", "Config file");
+  
+  // OR tree data, labels data and the data matrix files
   TCLAP::ValueArg<std::string> tArg("t","tree", "Tree data file",  true, "",
       "tree data file");
-  cmd.add(tArg);
-
-  TCLAP::ValueArg<std::string> lArg("l","labels", "labels identifying orig vs copy data",  true, "",
+  TCLAP::ValueArg<std::string> lArg("l","labels", "labels identifying orig vs copy data",  false, "",
       "vector header file");
-  cmd.add(lArg);
-
-  TCLAP::ValueArg<std::string> xArg("x","data1", "Data set 1",  true, "",
+  TCLAP::ValueArg<std::string> xArg("x","data1", "Data set 1",  false, "",
       "data matrix header file");
+
+  // Add the args to the command line
+  std::vector<TCLAP::Arg *>  xorlist;
+  xorlist.push_back(&cArg);
+  xorlist.push_back(&tArg);
+  cmd.xorAdd(xorlist);
+  cmd.add(lArg);
   cmd.add(xArg);
 
-
+  // Parse the command line
   try{
     cmd.parse( argc, argv );
   } 
@@ -99,17 +100,56 @@ int main(int argc, char **argv){
     std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl; 
     return -1;
   }
-
-
-  GlutStrokeFont font;
+  
+  // Get the config file OR the tree, labels, and matrix files
+  std::string configFileName;
+  std::string treeFileName;
+  std::string lFileName;
+  std::string xFileName;
+  if(cArg.isSet()){
+    configFileName = cArg.getValue();
+    std::ifstream infile(configFileName);
+    std::string line;
+    while (std::getline(infile, line))
+      {
+	std::istringstream iss(line);
+	std::string flag, fileName;
+	
+	// Exit on an error
+	if (!(iss >> flag >> fileName)) {
+	  std::cout << "ERROR Reading config file" << std::endl; 
+	  exit(0);
+	} 
+	
+	if(flag == "-t"){
+	  treeFileName = fileName;
+	}
+	else if(flag == "-l"){
+	  lFileName = fileName;
+	}
+	else if(flag == "-x"){
+	  xFileName = fileName;
+	}
+	else{
+	  std::cout << "ERROR Parsing config file" << std::endl;
+	  exit(0);
+	}
+      }
+  }
+  else{
+    if(!tArg.isSet() || !lArg.isSet() || ! xArg.isSet()){
+      std::cout << "Argument Error: tree (-t), label (-l), and matrix (-x) files required!" << std::endl;
+      exit(0);
+    }
+    treeFileName = tArg.getValue();
+    lFileName = lArg.getValue();
+    xFileName = xArg.getValue();
+  }
      
-  std::string treeFileName = tArg.getValue();
-  std::string lFileName = lArg.getValue();
-  std::string xFileName = xArg.getValue();
+  GlutStrokeFont font;
 
-  std::cout << "read matrix" << std::endl;
+
   DenseMatrix<double> X = LinalgIO<double>::readMatrix(xFileName);
-  std::cout << "read vector" << std::endl;
   DenseVector<int> labels = LinalgIO<int>::readVector(lFileName);
 
   IPCATree<double> ipcaTree;
@@ -141,8 +181,9 @@ int main(int argc, char **argv){
   display->init();
 
   glutMainLoop();
-
+  
   return 0;
+
 }
 
 
