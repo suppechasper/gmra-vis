@@ -108,7 +108,7 @@ int main(int argc, char **argv){
   std::string xFileName;
   if(cArg.isSet()){
     configFileName = cArg.getValue();
-    std::ifstream infile(configFileName);
+    std::ifstream infile(configFileName.c_str());
     std::string line;
     while (std::getline(infile, line))
       {

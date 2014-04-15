@@ -131,12 +131,12 @@ class ParallelDEL : public DisplayElement{
       glEnd();
   
      
+      // Draw the individual principle components
+      
       // Draw the + std dev
-      // std::cout << "signa: " << sigma.N() << std::endl;
       glLineWidth(1);
-      // glColor3f(1.0, 0.25, 0.25);
-      //      for(int pc = 0; pc < sigma.N(); pc++){
-	for(int pc = 0; pc < 1; pc++){
+      //for(int pc = 0; pc < sigma.N(); pc++){
+      for(int pc = 0; pc < 1; pc++){
 	Tuple color = data.pcColors.getColor(pc);
 	glColor3f(color.r, color.g, color.b);
 	glBegin(GL_LINE_STRIP);
@@ -152,21 +152,46 @@ class ParallelDEL : public DisplayElement{
       
       // Draw the - std dev
       glLineWidth(1);
-      //for(int pc = 0; pc < sigma.N(); pc++){
-      for(int pc = 0; pc < 1; pc++){
+      for(int pc = 0; pc < sigma.N(); pc++){
+      // for(int pc = 0; pc < 1; pc++){
 	Tuple color = data.pcColors.getColor(pc);
-	glColor3f(color.r-.35, color.g-.35, color.b-.35);
+	glColor3f(color.r-.5, color.g-.5, color.b-.5);
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
+	//for(int d = 0; d < 2; d++){
+	
 	  float ptLocation = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
 				    data.maxCenter[d], yTop, yTop+height);  
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
 	}
-	glEnd();
+	glEnd();      
+      }
+
+      // Draw the quad strip
+      glLineWidth(1);
+      for(int pc = 0; pc < sigma.N(); pc++){
+      //for(int pc = 0; pc < 1; pc++){
+	xStart = xLeft;
+	glBegin(GL_QUAD_STRIP);
+	Tuple color = data.pcColors.getColor(pc);
+		for(int d = 0; d < center.N(); d++){
+		  //for(int d = 0; d < 2; d++){
+	  float ptLocationUp = affine(data.minCenter[d], (float)(center(d) + phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
+				      data.maxCenter[d], yTop, yTop+height);  
+	  float ptLocationDwn = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
+				       data.maxCenter[d], yTop, yTop+height);  
+	  	  
+	  glColor4f(color.r, color.g, color.b, 0.25);
+	  glVertex2f(xStart,ptLocationUp);
+	  glColor4f(color.r-.45, color.g-.45, color.b-.45, 0.25);
+	  glVertex2f(xStart,ptLocationDwn);
+	  xStart += space;
 	}
-      
+	glEnd();
+      }
+
       // Draw the central line
       glLineWidth(2);
       glBegin(GL_LINE_STRIP);

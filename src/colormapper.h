@@ -162,10 +162,10 @@ class ColorMapper
     gmid = (Gmin + Gmax) * 0.5;
     bmid = (Bmin + Bmax) * 0.5;
 
-    std::cout << "set min: " << Rmin << " " << Gmin << " " << Bmin << std::endl;
+    /*  std::cout << "set min: " << Rmin << " " << Gmin << " " << Bmin << std::endl;
     std::cout << "set mid: " << rmid << " " << gmid << " " << bmid << std::endl;
     std::cout << "set max: " << Rmax << " " << Gmax << " " << Bmax << std::endl;
-
+    */
   } 
 
   void setRange(T rmin, T rmid, T rmax){

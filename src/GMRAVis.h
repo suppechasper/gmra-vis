@@ -110,7 +110,7 @@ public:
       
     // The parallel coordinates plot
     ParallelDEL<TPrecision> * pc = new ParallelDEL<TPrecision>(data);
-    pc->location(250, 700, 500, 200);
+    pc->location(250, 800, 500, 200);
     elements.push_back(pc);
 
     // The ellipses
