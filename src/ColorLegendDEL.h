@@ -20,31 +20,30 @@ class ColorLegendDEL : public DisplayElement{
   int lw;
   
   ColorMapper<float> &cmap;
-  
+
+  bool isVertical;
+
  public:
   
- ColorLegendDEL( ColorMapper<float> &cm ) : cmap(cm){ 
+  //--- Constructor ---//
+ ColorLegendDEL( ColorMapper<float> &cm, bool vertical = true ) : cmap(cm), isVertical(vertical){ 
   };
-  
-  
-  
+    
+  //--- Set the location of the color legend ---///
   void location(int xPos, int yPos, int w, int h){
     width = w;
     height = h;
+      
     xLeft = xPos;
     yTop = yPos;
     
     yMid = height*(cmap.rangeMax - cmap.rangeMid) / (cmap.rangeMax - cmap.rangeMin);
   };
   
+  //--- Initialization ---//
+  void init(){};
   
-  
-  
-  void init(){  
-    
-  };
-  
-  
+  //--- Display the color legend ---//
   void display(void){
     
     glMatrixMode(GL_MODELVIEW); 	
@@ -55,12 +54,14 @@ class ColorLegendDEL : public DisplayElement{
     glColor3f(cmap.rmax, cmap.gmax, cmap.bmax);
     glVertex2f(xLeft, yTop ) ;
     glVertex2f(xLeft + width, yTop );
+
     glColor3f(cmap.rmid, cmap.gmid, cmap.bmid);
     glVertex2f(xLeft + width, yTop + yMid );
-    glVertex2f(xLeft, yTop + yMid);
-    
+    glVertex2f(xLeft, yTop + yMid);    
+
     glVertex2f(xLeft, yTop + yMid );
     glVertex2f(xLeft+width, yTop + yMid);
+
     glColor3f(cmap.rmin, cmap.gmin, cmap.bmin);
     glVertex2f(xLeft + width, yTop + height );
     glVertex2f(xLeft, yTop + height);

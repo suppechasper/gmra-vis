@@ -99,7 +99,7 @@ public:
     elements.push_back(pd);
      
     // Add the color legend for the tree
-    ColorLegendDEL<TPrecision> *cld =  new ColorLegendDEL<TPrecision>(data.treeColor);
+    ColorLegendDEL<TPrecision> *cld =  new ColorLegendDEL<TPrecision>(data.entropyColor);
     cld->location(820, 10, 20, 200);
     elements.push_back(cld);
     
@@ -110,7 +110,7 @@ public:
       
     // The parallel coordinates plot
     ParallelDEL<TPrecision> * pc = new ParallelDEL<TPrecision>(data);
-    pc->location(250, 500, 500, 200);
+    pc->location(250, 700, 500, 200);
     elements.push_back(pc);
 
     // The ellipses

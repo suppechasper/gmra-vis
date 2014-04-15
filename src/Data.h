@@ -130,6 +130,7 @@ public:
   // Colormaps 
   ColorMapper<float> treeColor;
   ColorMapper<float> entropyColor;
+  DiscreteColorMapper<float> pcColors;
   DiscreteColorMapper<float> labelsColor;
   
   //--- Constructor ---//
@@ -184,6 +185,10 @@ public:
    
    // Set the discrete colormap
    labelsColor.set(labelWeights.size());
+
+   // Set the principal components colormap
+   pcColors = DiscreteColorMapper<float>(true);
+   pcColors.set(root->sigma.N());
 
    // Initialize the min/max centers
    minCenter.resize(root->getCenter().N());

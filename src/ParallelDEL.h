@@ -130,25 +130,19 @@ class ParallelDEL : public DisplayElement{
       }
       glEnd();
   
-      // Draw the central line
-      glLineWidth(2);
-      glBegin(GL_LINE_STRIP);
-      xStart = xLeft;
-      for(int i = 0; i < center.N(); i++){
-	float ptLocation = affine((float)data.minCenter[i], (float)center(i), (float)data.maxCenter[i], yTop, yTop+height);  
-	glVertex2f(xStart, ptLocation);
-	xStart += space;
-      }
-      glEnd();
-    
+     
       // Draw the + std dev
+      // std::cout << "signa: " << sigma.N() << std::endl;
       glLineWidth(1);
-      glColor3f(1.0, 0.25, 0.25);
-      for(int pc = 0; pc < sigma.N(); pc++){
+      // glColor3f(1.0, 0.25, 0.25);
+      //      for(int pc = 0; pc < sigma.N(); pc++){
+	for(int pc = 0; pc < 1; pc++){
+	Tuple color = data.pcColors.getColor(pc);
+	glColor3f(color.r, color.g, color.b);
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
-	  float ptLocation = affine(data.minCenter[d], (float)(center(d) + phi(d, pc)*sigma(pc)), 
+	  float ptLocation = affine(data.minCenter[d], (float)(center(d) + phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
 				    data.maxCenter[d], yTop, yTop+height);  
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
@@ -158,18 +152,33 @@ class ParallelDEL : public DisplayElement{
       
       // Draw the - std dev
       glLineWidth(1);
-      glColor3f(0.25, 0.25, 1.0);
-      for(int pc = 0; pc < sigma.N(); pc++){
+      //for(int pc = 0; pc < sigma.N(); pc++){
+      for(int pc = 0; pc < 1; pc++){
+	Tuple color = data.pcColors.getColor(pc);
+	glColor3f(color.r-.35, color.g-.35, color.b-.35);
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
-	  float ptLocation = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*sigma(pc)), 
+	  float ptLocation = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
 				    data.maxCenter[d], yTop, yTop+height);  
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
 	}
 	glEnd();
+	}
+      
+      // Draw the central line
+      glLineWidth(2);
+      glBegin(GL_LINE_STRIP);
+      glColor3f(0.75, 0.75, 0.75);
+      xStart = xLeft;
+      for(int i = 0; i < center.N(); i++){
+	float ptLocation = affine((float)data.minCenter[i], (float)center(i), (float)data.maxCenter[i], yTop, yTop+height);  
+	glVertex2f(xStart, ptLocation);
+	xStart += space;
       }
+      glEnd();
+    
     }
   }
 

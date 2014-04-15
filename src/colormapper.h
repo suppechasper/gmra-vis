@@ -48,21 +48,36 @@ protected:
   std::vector<Tuple> colormap;
  
 public:
-  DiscreteColorMapper(){
-    colors.push_back(Tuple(228,26,28));
-    colors.push_back(Tuple(55,126,184));
-    colors.push_back(Tuple(77,175,74));
-    colors.push_back(Tuple(152,78,163));
-    colors.push_back(Tuple(255,127,0));
-    colors.push_back(Tuple(255,255,51));
-    colors.push_back(Tuple(166,86,40));
-    colors.push_back(Tuple(247,129,191));
-    colors.push_back(Tuple(153,153,153));
-    set(9);
+  DiscreteColorMapper(bool paired = false){
+    if(paired){
+      colors.push_back(Tuple(166,206,227));
+      colors.push_back(Tuple(31,120,180));
+      colors.push_back(Tuple(178,223,138));
+      colors.push_back(Tuple(51,160,44));
+      colors.push_back(Tuple(251,154,153));
+      colors.push_back(Tuple(227,26,28));
+      colors.push_back(Tuple(253,191,111));
+      colors.push_back(Tuple(255,127,0));
+      colors.push_back(Tuple(202,178,214));
+      colors.push_back(Tuple(106,61,154));
+      set(10);
+    }
+    else{
+      colors.push_back(Tuple(228,26,28));
+      colors.push_back(Tuple(55,126,184));
+      colors.push_back(Tuple(77,175,74));
+      colors.push_back(Tuple(152,78,163));
+      colors.push_back(Tuple(255,127,0));
+      colors.push_back(Tuple(255,255,51));
+      colors.push_back(Tuple(166,86,40));
+      colors.push_back(Tuple(247,129,191));
+      colors.push_back(Tuple(153,153,153));
+      set(9); 
+   }
   }
 
   void set(int numColors){
-    if(numColors > 9){
+    if(numColors > colors.size()){
       std::cout << "ERROR!  MORE THAN 9 COLORS - ADD MORE COLORS TO MAP!!" << std::endl;
       exit(0);
     }
@@ -119,12 +134,7 @@ class ColorMapper
     return *this;
   }
 
-
-
-
-  virtual ~ColorMapper() {}
-
-      
+  virtual ~ColorMapper() {}    
   
   void set(T Rmin, T Rmid, T Rmax, T Gmin, T Gmid, T Gmax, T Bmin, T Bmid, T Bmax){
 
@@ -140,6 +150,7 @@ class ColorMapper
   };
 
   void set(T Rmin, T Rmax, T Gmin, T Gmax, T Bmin, T Bmax){
+
     rmin = Rmin;
     rmax = Rmax;
     gmin = Gmin;
@@ -150,6 +161,11 @@ class ColorMapper
     rmid = (Rmin + Rmax) * 0.5;
     gmid = (Gmin + Gmax) * 0.5;
     bmid = (Bmin + Bmax) * 0.5;
+
+    std::cout << "set min: " << Rmin << " " << Gmin << " " << Bmin << std::endl;
+    std::cout << "set mid: " << rmid << " " << gmid << " " << bmid << std::endl;
+    std::cout << "set max: " << Rmax << " " << Gmax << " " << Bmax << std::endl;
+
   } 
 
   void setRange(T rmin, T rmid, T rmax){
