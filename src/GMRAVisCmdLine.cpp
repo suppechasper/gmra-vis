@@ -13,6 +13,8 @@
 #include <StdOutput.h>
 #include "GlutStrokeFont.h"
 
+#include <iostream>
+
 #define MAKE_STRING_(x) #x
 #define MAKE_STRING(x) MAKE_STRING_(x)
 
@@ -111,30 +113,30 @@ int main(int argc, char **argv){
     std::ifstream infile(configFileName.c_str());
     std::string line;
     while (std::getline(infile, line))
-      {
-	std::istringstream iss(line);
-	std::string flag, fileName;
-	
-	// Exit on an error
-	if (!(iss >> flag >> fileName)) {
-	  std::cout << "ERROR Reading config file" << std::endl; 
-	  exit(0);
-	} 
-	
-	if(flag == "-t"){
-	  treeFileName = fileName;
-	}
-	else if(flag == "-l"){
-	  lFileName = fileName;
-	}
-	else if(flag == "-x"){
-	  xFileName = fileName;
-	}
-	else{
-	  std::cout << "ERROR Parsing config file" << std::endl;
-	  exit(0);
-	}
+    {
+      std::istringstream iss(line);
+      std::string flag, fileName;
+
+      // Exit on an error
+      if (!(iss >> flag >> fileName)) {
+        std::cout << "ERROR Reading config file" << std::endl; 
+        exit(0);
+      } 
+
+      if(flag == "-t"){
+        treeFileName = fileName;
       }
+      else if(flag == "-l"){
+        lFileName = fileName;
+      }
+      else if(flag == "-x"){
+        xFileName = fileName;
+      }
+      else{
+        std::cout << "ERROR Parsing config file" << std::endl;
+        exit(0);
+      }
+    }
   }
   else{
     if(!tArg.isSet() || !lArg.isSet() || ! xArg.isSet()){
