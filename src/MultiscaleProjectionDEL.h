@@ -17,7 +17,7 @@
 #include "Font.h"
 
 
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class MultiscaleProjectionDEL : public DisplayElement{
 
   private:
@@ -39,14 +39,14 @@ class MultiscaleProjectionDEL : public DisplayElement{
 
     int nScales;
 
-    Data<TPrecision> &data;
+    Data<TPrecision, LabelType> &data;
 
     FortranLinalg::DenseMatrix<TPrecision> P;
 
     //Circle
     FortranLinalg::DenseMatrix<TPrecision> B;
 
-    DoubleRotation<TPrecision> rotation;
+    DoubleRotation<TPrecision, LabelType> rotation;
     Animator &animator;
 
     std::set<int> nodes;
@@ -55,7 +55,7 @@ class MultiscaleProjectionDEL : public DisplayElement{
   
   public:
 
-    MultiscaleProjectionDEL(Data<TPrecision> &d, Animator &anim) 
+ MultiscaleProjectionDEL(Data<TPrecision, LabelType> &d, Animator &anim) 
       : data(d), animator(anim), rotation(d){
         using namespace FortranLinalg;
 

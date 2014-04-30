@@ -4,15 +4,40 @@
 #include "DenseMatrix.h"
 #include "Linalg.h"
 #include "IPCATree.h"
-#include "colormapper.h"
-
+#include "ColorMap.h"
 #include "GMRATree.h"
-
+#include "ColorMapFactories.h"
+#include "Vector.h"
 #include <vector>
 #include <map>
 #include <set>
 #include <algorithm>
 
+
+// * * * Display Node * * * //
+class DisplayNode{
+  
+public:
+  DisplayNode(int index){ nodeIndex = index; }
+  
+  void setColor(ColorF col) { _color = col; }
+  void setSelectecColor(ColorF col) { _selectedColor = col;}
+  void setQuads(std::array<Vector2f, 4> q){ quads = q; }
+  
+  int getIndex() { return nodeIndex; }
+  std::array<Vector2f, 4> getQuads() { return quads; }
+  ColorF getColor(){ return _color; }
+
+protected:
+  ColorF _color;
+  ColorF _selectedColor;
+  std::array<Vector2f, 4> quads;
+  float quad1[2];
+  float quad2[2];
+  float quad3[2];
+  float quad4[2];
+  int nodeIndex;
+};
 
 // * * * VisGMRANode * * * //
 template< typename TPrecision>
@@ -37,7 +62,8 @@ public:
   int label; // the maximal probability label
 
   // Visualization variables
-  float color[3];
+  // float color[3];
+  ColorF color;
   float quad1[2];
   float quad2[2];
   float quad3[2];
@@ -85,14 +111,14 @@ public:
 
 
 // * * * Data * * * //
-template<typename TPrecision>
+template<typename  TPrecision, typename LabelType>
 class Data{
   
 public:
   IPCATree<TPrecision> &tree;
   
   // The label of each of the points
-  FortranLinalg::DenseVector<int> labels; 
+  FortranLinalg::DenseVector<LabelType> labels; 
   
   // The data points
   FortranLinalg::DenseMatrix<TPrecision> points;
@@ -106,6 +132,9 @@ public:
   
   std::vector< VisGMRANode<TPrecision> * > currentScale;
   
+  // The icicle display tree
+  std::map<int, DisplayNode* > displayTree;
+
   // Scales 
   int nScales;
   std::list<int> currentSubScales;
@@ -124,23 +153,29 @@ public:
   std::vector<float> minCenter;
   std::vector<float> maxCenter;
 
+  int maxNodeSize;
+
   TPrecision minPatch;
   TPrecision maxPatch;
   
   // Colormaps 
-  ColorMapper<float> treeColor;
-  ColorMapper<float> entropyColor;
-  DiscreteColorMapper<float> pcColors;
-  DiscreteColorMapper<float> labelsColor;
+  std::map<LabelType, int> labelIndex;
+  std::string colormapScheme;
+  Colormap * colormap;
+  Colormap * pcColors;
+  
+  //  Colormap * treeColor;
+  //DiscreteColormap * labelsColor;
   
   //--- Constructor ---//
  Data( IPCATree<TPrecision> &t,
-       FortranLinalg::DenseVector<int> &l, 
-       FortranLinalg::DenseMatrix<TPrecision> X) 
+       FortranLinalg::DenseVector<LabelType> &l, 
+       FortranLinalg::DenseMatrix<TPrecision> X,
+       std::string colormapSchemeIn) 
    : tree(t), labels(l), points(X), maxScale(-1), 
-     selectedNode(-1), selectedIndex(-1), minRatio(1), maxRatio(1) {
+    selectedNode(-1), selectedIndex(-1), minRatio(1), maxRatio(1),
+    colormapScheme(colormapSchemeIn) {
    using namespace FortranLinalg;
-
 
    minPatch = Linalg<double>::MinAll(X);
    maxPatch = Linalg<double>::MaxAll(X);
@@ -155,21 +190,24 @@ public:
    std::list<GMRANode<TPrecision> *> nodes;
    nodes.push_back( tree.getRoot() );
 
-
    // Find all of the unique labels
-   std::map<int, double> labelWeights;
+   std::map<LabelType, double> labelWeights;
    for(int i = 0; i < labels.N(); i++){
-     std::map<int, double>::iterator it = labelWeights.find(labels(i));
+     typename std::map<LabelType, double>::iterator it = labelWeights.find(labels(i));
      if(it != labelWeights.end())
        it->second += 1.0;
      else
        labelWeights[labels(i)] = 1.0;
    }
-   
-   // Find the weights
-   for(std::map<int, double>::iterator it = labelWeights.begin(); it != labelWeights.end(); ++it)
+
+   // Find the weights and fill the colormap index map
+   int count = 0;
+   for(typename std::map<LabelType, double>::iterator it = labelWeights.begin(); it != labelWeights.end(); ++it){
      it->second = 1.0/it->second;	
-   
+     labelIndex[it->first] = count;
+     count ++;
+   }
+
    // Set the min and max 
    minEntropy = 0;
    maxEntropy = -log(1.0/(double)labelWeights.size());
@@ -180,20 +218,15 @@ public:
    std::list<int> xpos;
    xpos.push_back(0);
 
-   // Set the colormap for entropy
-   entropyColor.set(0.0, 0.5, 1.0, 0.0, 0.5, 1.0, 0.0, 0.5, 1.0);
-   
-   // Set the discrete colormap
-   labelsColor.set(labelWeights.size());
-
-   // Set the principal components colormap
-   pcColors = DiscreteColorMapper<float>(true);
-   pcColors.set(root->sigma.N());
+   // Set the colormap for the parallel coordinates
+   ColormapFactory * factory = new PairedDiscreteColormapFactory(root->sigma.N());
+   pcColors = factory->getColormap();
 
    // Initialize the min/max centers
    minCenter.resize(root->getCenter().N());
    maxCenter.resize(root->getCenter().N());
 
+   maxNodeSize = 0;
    int nodeCount = 0;
    while( !nodes.empty() ){
      VisGMRANode<TPrecision> *node = (VisGMRANode<TPrecision> *) nodes.front();
@@ -206,6 +239,10 @@ public:
        minCenter[i] = minCenter[i] < center(i) ? minCenter[i] : center(i);
        maxCenter[i] = maxCenter[i] > center(i) ? maxCenter[i] : center(i);
      }
+
+     // Find the maximum number of points in a node
+     if(node->getPoints().size() != tree.getRoot()->getPoints().size())
+     maxNodeSize = maxNodeSize > node->getPoints().size() ? maxNodeSize : node->getPoints().size();
 
      int scale = scales.front();
      scales.pop_front();
@@ -291,45 +328,62 @@ public:
      nodeMap[nodeCount] = node;
      nodeCount++;
    }
+
+   // Set the colormap for the passed in scheme
+   if(colormapScheme == "entropy"){
+     ColormapFactory * factory = new Paired12DiscreteGreyscaleColormapFactory(labelWeights.size());
+     colormap = factory->getColormap();
+     dynamic_cast<TwoDDiscreteColormap*>(colormap)->setFactoryRange(minEntropy, 
+								    maxEntropy);
+   }
+   else if(colormapScheme == "ratio"){
+     ColormapFactory * factory = new YellowWhiteBlueColormapFactory();
+       colormap = factory->getColormap();
+       colormap->setRange(minRatio, maxRatio);
+   }
+   else if(colormapScheme == "other"){
+     std::cout << "implement other color technique!" << std::endl;
+   }
  }
   
   //--- Set the selected node ---//
   void setSelected(int index){
     using namespace FortranLinalg;
+
     selectedNode = index;
     P.deallocate();
-
     if(selectedNode != -1){
       VisGMRANode<TPrecision> *vnode  = dynamic_cast<VisGMRANode<TPrecision> *>( nodeMap[selectedNode] );
       IPCANode<TPrecision> *node= dynamic_cast<IPCANode<TPrecision> *>( vnode->getDecoratedNode() );
-      
+
       if(node != NULL){
-	
 	std::vector<int> pts = node->getPoints();
 	DenseMatrix<TPrecision> XP(points.M(), pts.size() );
 	for(int i=0; i<pts.size(); i++){
 	  Linalg<TPrecision>::SetColumn(XP, i, points, pts[i]);
 	} 
+
 	DenseMatrix<TPrecision> phi(XP.M(), 2);
 	Linalg<TPrecision>::Zero(phi);
 	for(int i=0; i<std::min(2, (int) node->phi.N()); i++ ){
 	  Linalg<TPrecision>::SetColumn(phi, i, node->phi, i);
 	}
+
 	Linalg<TPrecision>::SubtractColumnwise(XP, node->center, XP);
 	P = Linalg<TPrecision>::Multiply(phi, XP, true);
+
 	XP.deallocate();
 	phi.deallocate(); 
-	
+
 	TPrecision maxP = Linalg<TPrecision>::MaxAll(P);
 	TPrecision minP = Linalg<TPrecision>::MinAll(P);
 	TPrecision scaling = std::max(fabs(maxP), fabs(minP));
+
 	Linalg<TPrecision>::Scale(P, 1.0/scaling, P);
-	
 	ExtractScale<TPrecision> extract( vnode->getScale() );
 	tree.breadthFirstVisitor( &extract);
 	currentScale = extract.getNodes();
-          
-        }
+      }
     }
     else{
       P = DenseMatrix<TPrecision>();  

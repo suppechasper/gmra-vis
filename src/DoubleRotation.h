@@ -10,7 +10,7 @@
 
 
 
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class DoubleRotation : public Animation{
 
   public:
@@ -23,14 +23,14 @@ class DoubleRotation : public Animation{
 
   public:
 
-    Rotation<TPrecision> Rone;
-    Rotation<TPrecision> Rtwo;
+    Rotation<TPrecision, LabelType> Rone;
+    Rotation<TPrecision, LabelType> Rtwo;
 
     FortranLinalg::DenseVector<TPrecision> t2;
     bool target2;
 
-    DoubleRotation(Data<TPrecision> &d) :Rone(d, Rotation<TPrecision>::Primary),
-    Rtwo(d,Rotation<TPrecision>::Secondary){ 
+ DoubleRotation(Data<TPrecision, LabelType> &d) :Rone(d, Rotation<TPrecision, LabelType>::Primary),
+      Rtwo(d,Rotation<TPrecision, LabelType>::Secondary){ 
 
       target2 = false;
     };

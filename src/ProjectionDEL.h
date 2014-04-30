@@ -17,7 +17,7 @@
 // + + + + + + + + + + + + + + //
 // The scatter plot
 // + + + + + + + + + + + + + + //
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class ProjectionDEL : public DisplayElement{
   
 private:
@@ -32,12 +32,12 @@ private:
   int pickH, pickW;  
   float alpha;
 
-  Data<TPrecision> &data;
+  Data<TPrecision, LabelType> &data;
   
 public:
 
   //--- Constructor ---//
-  ProjectionDEL(Data<TPrecision> &d) 
+ ProjectionDEL(Data<TPrecision, LabelType> &d) 
     : DisplayElement(), data(d){ 
     pickW = 5;
     pickH = 5;
@@ -96,8 +96,8 @@ public:
 	else{	  
 	  glColor4f(1, 0.45, 0, alpha);
 	  }*/
-	Tuple labelColor = data.labelsColor.getColor(data.labels(pts[i]));
-	glColor4f(labelColor.r, labelColor.g, labelColor.b, alpha);
+	ColorF labelColor = data.colormap->getColor(data.labels(pts[i]));
+	glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), alpha);
 	
 	// Draw the point
 	glVertex2f(x1, x2);

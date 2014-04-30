@@ -1,15 +1,14 @@
-#ifndef TREEDEL_H
-#define TREEDEL_H
+#ifndef SUNBURST_TREEDEL_H
+#define SUNBURST_TREEDEL_H
 
 #include "Display.h"
 #include "GMRATree.h"
-#include "ColorMap.h"
-#include "Vector.h"
 #include <algorithm>
+#include "ColorMap.h"
 
 // * * * Icicle tree diagram * * * //
 template<typename TPrecision, typename LabelType>
-class TreeDEL : public DisplayElement{
+class SunBurstTreeDEL : public DisplayElement{
 
  private:
 
@@ -32,14 +31,20 @@ class TreeDEL : public DisplayElement{
  public:
   
   //--- Contructor ---//
- TreeDEL(Data<TPrecision, LabelType> &d, bool isVertical = true) 
+ SunBurstTreeDEL(Data<TPrecision, LabelType> &d, bool isVertical = true) 
    : DisplayElement(), data(d), vertical(isVertical){ 
     pickW = 2;
     pickH = 2;
     lw = 1;
     selected = -1;
     nScales = data.maxScale + 1;
+
+    // Create the tree
+    createTree();
   };
+
+  //--- Initialize the tree ---//
+  void init(){};
   
   //--- Set the position of the tree ---//
   void location(int xPos, int yPos, int w, int h){
@@ -58,23 +63,38 @@ class TreeDEL : public DisplayElement{
     createTree();
   };
 
-  //--- Reshape the tree ---//
+ //--- Reshape the tree ---//
   void reshape(int w, int h){
-    DisplayElement::reshape(w, h);
 
-    // Reflect the new size of the window to the tree
-    int newW, newH;
-    if(vertical){
-      newW = height*wRatio;
-      newH = width*hRatio;
+    // If we don't have the window dims yet, set them
+    if((windowWidth == -1) && (windowHeight == -1)){
+      windowWidth = w;
+      windowHeight = h;
     }
     else{
-      newW = width*wRatio;
-      newH = height*hRatio;
-    } 
+      
+      // Get the ratio of the old window size to the new
+      float wRatio = (float)w/(float)windowWidth;
+      float hRatio = (float)h/(float)windowHeight;
+  
+      // Set the new window dimensions
+      windowWidth = w;
+      windowHeight = h;
+      
+      // Reflect the new size of the window to the tree
+      int newW, newH;
+      if(vertical){
+	newW = height*wRatio;
+	newH = width*hRatio;
+      }
+      else{
+	newW = width*wRatio;
+	newH = height*hRatio;
+      } 
 
-    // Change the location & size of the tree
-    location(xLeft, yTop, newW, newH);
+      // Change the location & size of the tree
+      location(xLeft, yTop, newW, newH);
+    }
   };
   
   //--- Check if the mouse is inside the tree ---//
@@ -92,22 +112,23 @@ class TreeDEL : public DisplayElement{
   //--- Precompute the tree on itialization ---//
   void createTree(){
 
+    // Set the ranges of the colormaps
+    data.treeColor.setRange(data.minRatio, data.maxRatio);
+    data.entropyColor.setRange(data.minEntropy, data.maxEntropy);
+
     // Get the root of the tree
     VisGMRANode<TPrecision> *rootNode = (VisGMRANode<TPrecision> *) data.tree.getRoot();
     std::list<GMRANode<TPrecision> *> nodes;
     nodes.push_back(rootNode);
 
     // Get the maximal width of a node
-    minWidth = 2;
+    minWidth = 4;
     maxWidth = rootNode->getPoints().size();         
-
+    
     // Iterate through the nodes
     while( !nodes.empty()){   
       VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );
       nodes.pop_front();
-      
-      // Create a new display node
-      DisplayNode * dNode = new DisplayNode(node->ID);
 
       // The scale of this node
       int scale = node->getScale();	
@@ -125,14 +146,8 @@ class TreeDEL : public DisplayElement{
       node->wnode = wnode;
       
       // Calculate the corners of the quad
-      std::array<Vector2f, 4> quads;
       if(!vertical){
-	quads[0] = Vector2f(xStart,         yStart);
-	quads[1] = Vector2f(xStart,         yStart + nodeWidth);
-	quads[2] = Vector2f(xStart + wnode, yStart + nodeWidth);
-	quads[3] = Vector2f(xStart + wnode, yStart);
-	
-	/*	node->quad1[0] = xStart;
+	node->quad1[0] = xStart;
 	node->quad1[1] = yStart;
 	node->quad2[0] = xStart;
 	node->quad2[1] = yStart + nodeWidth;
@@ -140,15 +155,9 @@ class TreeDEL : public DisplayElement{
 	node->quad3[1] = yStart + nodeWidth;
 	node->quad4[0] = xStart + wnode;
 	node->quad4[1] = yStart;
-	*/
       }
       else{
-	quads[0] = Vector2f(yStart,             xStart);
-	quads[1] = Vector2f(yStart,             xStart + wnode);
-	quads[2] = Vector2f(yStart + nodeWidth, xStart + wnode);
-	quads[3] = Vector2f(yStart + nodeWidth, xStart);
-
-	/*	node->quad1[0] = yStart;
+	node->quad1[0] = yStart;
 	node->quad1[1] = xStart;
 	node->quad2[0] = yStart;
 	node->quad2[1] = xStart + wnode;
@@ -156,43 +165,26 @@ class TreeDEL : public DisplayElement{
 	node->quad3[1] = xStart + wnode;
 	node->quad4[0] = yStart + nodeWidth;;
 	node->quad4[1] = xStart;
-	*/
       }
-      dNode->setQuads(quads);
        
       // Get the color of the node
-      ColorF color;
-      if(data.colormapScheme == "entropy"){
-	//std::cout << "label weight: " << data.labelWeights.size() << std::endl;
-	color = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
-	  getColor(data.labelIndex[node->label], node->entropy);
-      }
-      else if(data.colormapScheme == "ratio")
-	color = data.colormap->getColor(node->ratio);
-      else if(data.colormapScheme == "other"){
-	std::cout << "not sure on other!" << std::endl;
-	color = red;
-      }
-      dNode->setColor(color);
-      node->color = color;
-
-      // Add the display node to the tree
-      data.displayTree[dNode->getIndex()] = dNode;
-      
+      //data.treeColor.getColor(node->ratio, node->color);
+      ColorF labelColor = data.labelsColor->getColor(node->label);
+      //  data.entropyColor.set(labelColor.r, 0.90, labelColor.g, 0.90, labelColor.b, 0.90);
+      // data.entropyColor.set(labelColor.r, 1.0, labelColor.g, 1.0, labelColor.b, 1.0);
+      //data.entropyColor.getColor(node->entropy, node->color);
+  
       std::vector< GMRANode<TPrecision>* > children = node->getChildren();
       for(typename std::vector< GMRANode<TPrecision> * >::iterator it =
             children.begin(); it != children.end(); ++it){
 	nodes.push_back(*it);
       }
       // nodes.clear();
-      //std::cout << "done!" << std::endl;
     }
   }
   
   //--- Display the icicle tree ---//
   void display(void){
-
-    // std::cout << "TREE: " << width << " height: " << height << std::endl;
     
     glMatrixMode(GL_MODELVIEW); 	
     glLoadIdentity();
@@ -214,47 +206,29 @@ class TreeDEL : public DisplayElement{
       
       VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );
       nodes.pop_front();
-      
-      // Get the associated display node
-      DisplayNode * dNode = data.displayTree[node->ID];
+     
+      float alpha = 0.25;
+      if(data.selectedNode == -1)
+	alpha = 1.0;
 
       // Get the color of the node
-      // glColor4f(node->color.r(), node->color.g(), node->color.b(), alpha);
-      float alpha = 1.0;
-      //if(data.selectedNode == -1)
-      //	alpha = 1.0;
-      ColorF col = dNode->getColor();
-      glColor4f(col.r(), col.g(), col.b(), alpha);
+      glColor4f(node->color[0], node->color[1], node->color[2], alpha);
+      
+      drawFilledCircle(400, 400, 100);
+      
 
       // Draw the quad
-      std::array<Vector2f, 4> quads = dNode->getQuads();
-      glPushName( dNode->getIndex());
+      /*   glPushName( node->ID );
       glBegin(GL_QUADS);        
-      glVertex2f(quads[0][0], quads[0][1]);
-      glVertex2f(quads[1][0], quads[1][1]);
-      glVertex2f(quads[2][0], quads[2][1]);
-      glVertex2f(quads[3][0], quads[3][1]);					
+      glVertex2f(node->quad1[0], node->quad1[1]);
+      glVertex2f(node->quad2[0], node->quad2[1]);			
+      glVertex2f(node->quad3[0], node->quad3[1]);				
+      glVertex2f(node->quad4[0], node->quad4[1]);					
       glEnd();    
       glPopName();         
       
-      // If this node is the selected one, highlight it
-      if(data.selectedNode == dNode->getIndex()){
-	glLineWidth(2);
-	glColor3f(backgroundColor[0]+.1, backgroundColor[1]+.1, backgroundColor[2]+.1);
-	glBegin(GL_LINE_LOOP);
-	glVertex2f(quads[0][0], quads[0][1]);
-	glVertex2f(quads[1][0], quads[1][1]);
-	glVertex2f(quads[2][0], quads[2][1]);
-	glVertex2f(quads[3][0], quads[3][1]);					
-	glEnd();  
-
-	selectedScale = node->getScale();
-      }
-	
-
-      
       // Save the selected node info
-      /*  if( node->ID  == data.selectedNode){
+      if( node->ID  == data.selectedNode){
 	selectedQ1[0] = node->quad1[0];
 	selectedQ1[1] = node->quad1[1];
 	selectedQ2[0] = node->quad2[0];
@@ -265,7 +239,8 @@ class TreeDEL : public DisplayElement{
 	selectedQ4[1] = node->quad4[1];
 
 	selectedScale = node->getScale();
-	}*/
+      }
+      */
 
       // Get the node's children
       std::vector< GMRANode<TPrecision>* > children = node->getChildren();
@@ -277,7 +252,7 @@ class TreeDEL : public DisplayElement{
     }    
     
     // Draw the selection rectangle
-    /* glLineWidth(1);
+    /* glLineWidth(2);
     if(selectedScale != -1){
       // glColor3f(0, 1, 0);
       glColor3f(backgroundColor[0]+.1, backgroundColor[1]+.1, backgroundColor[2]+.1);
@@ -288,12 +263,12 @@ class TreeDEL : public DisplayElement{
       glVertex2f(selectedQ4[0], selectedQ4[1]);
       glEnd();      
     }
-    */
-    
-    // Highlight the part of the tree selected
-    if(data.selectedNode != -1){  
 
-      /*  std::list<GMRANode<TPrecision> *> nodesSelect;
+    */
+    // Highlight the part of the tree selected
+    /* if(data.selectedNode != -1){  
+
+      std::list<GMRANode<TPrecision> *> nodesSelect;
       nodesSelect.push_back( (VisGMRANode<TPrecision> *) data.nodeMap[data.selectedNode]);
       while( !nodesSelect.empty()){           
 	
@@ -310,9 +285,9 @@ class TreeDEL : public DisplayElement{
 	glVertex2f(nodeSelect->quad3[0], nodeSelect->quad3[1]);				
 	glVertex2f(nodeSelect->quad4[0], nodeSelect->quad4[1]);					
 	glEnd(); 
-      */
+
 	// Draw the quad     
-	/*	glLineWidth(1);
+	glLineWidth(1);
 	glColor3f(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
 	glBegin(GL_LINE_LOOP);        
 	glVertex2f(nodeSelect->quad1[0], nodeSelect->quad1[1]);
@@ -320,19 +295,17 @@ class TreeDEL : public DisplayElement{
 	glVertex2f(nodeSelect->quad3[0], nodeSelect->quad3[1]);				
 	glVertex2f(nodeSelect->quad4[0], nodeSelect->quad4[1]);					
 	glEnd(); 
-	*/
-
+       
 	// Get the node's children
-      /*	std::vector< GMRANode<TPrecision>* > children = nodeSelect->getChildren();
+	std::vector< GMRANode<TPrecision>* > children = nodeSelect->getChildren();
 	for(typename std::vector< GMRANode<TPrecision> * >::iterator it =
 	      children.begin(); it != children.end(); ++it){
 	  nodesSelect.push_back(*it);
 	}
-	}*/
-
+      }
 
       // Draw the selection rectangle
-      /* glLineWidth(2);
+      glLineWidth(2);
       if(selectedScale != -1){
 	// glColor3f(0, 1, 0);
 	glColor3f(backgroundColor[0]+.1, backgroundColor[1]+.1, backgroundColor[2]+.1);
@@ -342,8 +315,9 @@ class TreeDEL : public DisplayElement{
 	glVertex2f(selectedQ3[0], selectedQ3[1]);
 	glVertex2f(selectedQ4[0], selectedQ4[1]);
 	glEnd();      
-	} */   
-    }
+      }   
+     
+      }*/
   }
   
   // --- Mouse actions --- //
@@ -373,7 +347,7 @@ class TreeDEL : public DisplayElement{
       GLint hits = glRenderMode(GL_RENDER);
       selected = -1;
       for(int i=0; i<hits; i++){
-        int tmp = selectBuf[3];
+        int tmp = selectBuf[i*4 + 3];
         if(tmp != -1){
           selected = tmp;
         }
@@ -382,6 +356,7 @@ class TreeDEL : public DisplayElement{
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
       glutPostRedisplay();
+      
       data.setSelected( selected) ;    
     }
   };
@@ -396,6 +371,27 @@ class TreeDEL : public DisplayElement{
   void keyboard(unsigned char key, int x, int y){};
   void special(int key, int x, int y){};
   
+ void drawFilledCircle(GLfloat x, GLfloat y, GLfloat radius){
+      int i;
+      int triangleAmount = 200; //# of triangles used to draw circle
+      
+      //GLfloat radius = 0.8f; //radius
+      GLfloat twicePi = 2.0f * M_PI;
+      
+      glBegin(GL_TRIANGLE_FAN);
+      glVertex2f(x, y); // center of circle
+      for(i = 0; i <= triangleAmount;i++) { 
+    glVertex2f(
+	       x + (radius * cos(i *  twicePi / triangleAmount)), 
+	       y + (radius * sin(i * twicePi / triangleAmount))
+	       );
+      }
+      glEnd();
+    }
 };
 
 #endif
+
+
+
+   

@@ -19,7 +19,7 @@
 #define MAKE_STRING(x) MAKE_STRING_(x)
 
 
-GMRAVis<double> *display;
+GMRAVis<double, int> *display;
 
 void display1(void){
   display->display();
@@ -108,12 +108,16 @@ int main(int argc, char **argv){
   std::string treeFileName;
   std::string lFileName;
   std::string xFileName;
+  std::string colormap;
   if(cArg.isSet()){
     configFileName = cArg.getValue();
     std::ifstream infile(configFileName.c_str());
     std::string line;
     while (std::getline(infile, line))
     {
+      if(line.find("#") != std::string::npos)
+	continue;
+      
       std::istringstream iss(line);
       std::string flag, fileName;
 
@@ -132,6 +136,9 @@ int main(int argc, char **argv){
       else if(flag == "-x"){
         xFileName = fileName;
       }
+      else if(flag == "-c"){
+	colormap = fileName;
+      }
       else{
         std::cout << "ERROR Parsing config file" << std::endl;
         exit(0);
@@ -149,8 +156,6 @@ int main(int argc, char **argv){
   }
      
   GlutStrokeFont font;
-
-
   DenseMatrix<double> X = LinalgIO<double>::readMatrix(xFileName);
   DenseVector<int> labels = LinalgIO<int>::readVector(lFileName);
 
@@ -161,16 +166,16 @@ int main(int argc, char **argv){
   treeFile.close();
 
   // Create the data structure
-  Data<double> data(ipcaTree, labels, X);
+  Data<double, int> data(ipcaTree, labels, X, colormap);
 
   //GL stuff
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGB|GLUT_DOUBLE);
 
   //Windows
-  display = new GMRAVis<double>(font, data);
+  display = new GMRAVis<double, int>(font, data);
   
-  glutInitWindowSize(900, 900); 
+  glutInitWindowSize(1500, 900); 
   int mainWindow = glutCreateWindow(display->title().c_str());
   glutDisplayFunc(display1);
   glutVisibilityFunc(visible);

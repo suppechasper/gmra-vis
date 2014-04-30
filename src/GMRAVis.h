@@ -17,6 +17,7 @@
 #include "MultiscaleProjectionDEL.h"
 #include "ColorLegendDEL.h"
 #include "ParallelDEL.h"
+#include "SunburstTreeDel.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -28,7 +29,7 @@
 
 bool whiteBackground = false;
 
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class GMRAVis : public Display{
 
   private:
@@ -37,7 +38,7 @@ class GMRAVis : public Display{
     int width, height;
     int xM, yM;
     int pickH, pickW; 
-    Data<TPrecision> &data; 
+    Data<TPrecision, LabelType> &data; 
 
 
     std::list<DisplayElement *> elements;
@@ -46,7 +47,7 @@ class GMRAVis : public Display{
 public:
   
   //--- Constructor ---//
-  GMRAVis(Font &f, Data<TPrecision> &d) : Display(f), data(d){ 
+ GMRAVis(Font &f, Data<TPrecision, LabelType> &d) : Display(f), data(d){ 
     pickH = 5;
     pickW = 5;
     };
@@ -94,48 +95,62 @@ public:
     elements.clear();
 
     // Add the icicle tree
-    TreeDEL<TPrecision> *pd = new TreeDEL<TPrecision>(data);
-    pd->location(10, 10, 800, 200);
+    TreeDEL<TPrecision, LabelType> *pd = new TreeDEL<TPrecision, LabelType>(data);
+    pd->location(10, 10, 800, 300);
     elements.push_back(pd);
-     
+    
+    // The zoomed icicle tree
+    ZoomTreeDEL<TPrecision, LabelType> *ztd = new ZoomTreeDEL<TPrecision, LabelType>(data);
+    ztd->location(10, 825, 800, 300);
+    elements.push_back(ztd);
+    
+    // Sunburst tree
+    /*SunBurstTreeDEL<TPrecision, LabelType> * sun = new SunBurstTreeDEL<TPrecision, LabelType>(data);
+    sun->location(400, 400, 200, 200);
+    elements.push_back(sun);
+    */
+
     // Add the color legend for the tree
-    ColorLegendDEL<TPrecision> *cld =  new ColorLegendDEL<TPrecision>(data.entropyColor);
+    /*ColorLegendDEL<TPrecision, LabelType> *cld =  new ColorLegendDEL<TPrecision, LabelType>(data.entropyColor);
     cld->location(820, 10, 20, 200);
     elements.push_back(cld);
-    
+    */
+
+
     // The scatter plot
-    ProjectionDEL<TPrecision> *pDel = new ProjectionDEL<TPrecision>(data);
-    pDel->location(450, 320, 350, 350);
+     ProjectionDEL<TPrecision, LabelType> *pDel = new ProjectionDEL<TPrecision, LabelType>(data);
+    pDel->location(550, 320, 350, 350);
     elements.push_back(pDel);
-      
+     
+
     // The parallel coordinates plot
-    ParallelDEL<TPrecision> * pc = new ParallelDEL<TPrecision>(data);
+    ParallelDEL<TPrecision, LabelType> * pc = new ParallelDEL<TPrecision, LabelType>(data);
     pc->location(250, 800, 500, 200);
     elements.push_back(pc);
-
-    // The ellipses
-    MultiscaleProjectionDEL<TPrecision> *projectionDel = new
-      MultiscaleProjectionDEL<TPrecision>(data, animator);
-    projectionDel->location(10, 220, 400, 400);
-    elements.push_back(projectionDel);
+    
 
     /*
-      ZoomTreeDEL<TPrecision> *ztd = new ZoomTreeDEL<TPrecision>(data);
-      ztd->location(10, 320, 350, 350);
-      elements.push_back(ztd);
+    // The ellipses
+    MultiscaleProjectionDEL<TPrecision, LabelType> *projectionDel = new
+      MultiscaleProjectionDEL<TPrecision, LabelType>(data, animator);
+    projectionDel->location(10, 220, 400, 400);
+    elements.push_back(projectionDel);
     */
     
-    /* PatchDEL<TPrecision> *patchDel = new PatchDEL<TPrecision>(data);
+    
+    
+    /* PatchDEL<TPrecision, LabelType> *patchDel = new PatchDEL<TPrecision, LabelType>(data);
        patchDel->location(550, 420, 400, 400);
        elements.push_back(patchDel);
     */
  
     /*
-      SinglePatchDEL<TPrecision> *spatchDel = new SinglePatchDEL<TPrecision>(data);
+      SinglePatchDEL<TPrecision, LabelType> *spatchDel = new SinglePatchDEL<TPrecision, LabelType>(data);
       spatchDel->location(750, 320, 100, 100);
       elements.push_back(spatchDel);
      
-      SinglePatchReconstructDEL<TPrecision> *srpatchDel = new SinglePatchReconstructDEL<TPrecision>(data);
+      SinglePatchReconstructDEL<TPrecision, LabelType> *srpatchDel = 
+      new SinglePatchReconstructDEL<TPrecision, LabelType>(data);
       srpatchDel->location(750, 430, 100, 100);
       elements.push_back(srpatchDel);
     */

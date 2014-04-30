@@ -6,7 +6,7 @@
 #include "DenseMatrix.h"
 
 
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class SinglePatchDEL : public DisplayElement{
 
   private:
@@ -21,12 +21,12 @@ class SinglePatchDEL : public DisplayElement{
     int pickH, pickW;  
 
    
-    Data<TPrecision> &data;
+    Data<TPrecision, LabelType> &data;
 
 
   public:
 
-    SinglePatchDEL(Data<TPrecision> &d) : data(d){ 
+ SinglePatchDEL(Data<TPrecision, LabelType> &d) : data(d){ 
       pickW = 2;
       pickH = 2;
     };

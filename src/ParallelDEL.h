@@ -4,12 +4,9 @@
 #include "DisplayElement.h"
 #include "Data.h"
 #include <map>
+#include "etc.h"
 
-template<class TypeIn, class TypeOut>                              // affine()
-inline TypeOut affine(const TypeIn &i,  const TypeIn &val, const TypeIn &I, const TypeOut &o, const TypeOut &O){
-    if (i == I) return O; else return (O - o)*(val - i) / (I - i) + o; }
-
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class ParallelDEL : public DisplayElement{
 
  private:
@@ -18,12 +15,12 @@ class ParallelDEL : public DisplayElement{
 #define BUFSIZE 512
   
   // The data
-  Data<TPrecision> &data;
+  Data<TPrecision, LabelType> &data;
 
  public:
   
   //--- Constructor ---//
-  ParallelDEL(Data<TPrecision> &d) : DisplayElement(), data(d){
+ ParallelDEL(Data<TPrecision, LabelType> &d) : DisplayElement(), data(d){
     pickW = pickH = 2;
     // createCoordinates();
   }
@@ -137,8 +134,8 @@ class ParallelDEL : public DisplayElement{
       glLineWidth(1);
       //for(int pc = 0; pc < sigma.N(); pc++){
       for(int pc = 0; pc < 1; pc++){
-	Tuple color = data.pcColors.getColor(pc);
-	glColor3f(color.r, color.g, color.b);
+	ColorF color = data.pcColors->getColor(pc);
+	glColor3f(color.r(), color.g(), color.b());
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
@@ -154,8 +151,8 @@ class ParallelDEL : public DisplayElement{
       glLineWidth(1);
       for(int pc = 0; pc < sigma.N(); pc++){
       // for(int pc = 0; pc < 1; pc++){
-	Tuple color = data.pcColors.getColor(pc);
-	glColor3f(color.r-.5, color.g-.5, color.b-.5);
+	ColorF color = data.pcColors->getColor(pc);
+	glColor3f(color.r()-.5, color.g()-.5, color.b()-.5);
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
@@ -175,7 +172,7 @@ class ParallelDEL : public DisplayElement{
       //for(int pc = 0; pc < 1; pc++){
 	xStart = xLeft;
 	glBegin(GL_QUAD_STRIP);
-	Tuple color = data.pcColors.getColor(pc);
+	ColorF color = data.pcColors->getColor(pc);
 		for(int d = 0; d < center.N(); d++){
 		  //for(int d = 0; d < 2; d++){
 	  float ptLocationUp = affine(data.minCenter[d], (float)(center(d) + phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
@@ -183,9 +180,9 @@ class ParallelDEL : public DisplayElement{
 	  float ptLocationDwn = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
 				       data.maxCenter[d], yTop, yTop+height);  
 	  	  
-	  glColor4f(color.r, color.g, color.b, 0.25);
+	  glColor4f(color.r(), color.g(), color.b(), 0.25);
 	  glVertex2f(xStart,ptLocationUp);
-	  glColor4f(color.r-.45, color.g-.45, color.b-.45, 0.25);
+	  glColor4f(color.r()-.45, color.g()-.45, color.b()-.45, 0.25);
 	  glVertex2f(xStart,ptLocationDwn);
 	  xStart += space;
 	}

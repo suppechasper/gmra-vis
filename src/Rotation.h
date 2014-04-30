@@ -8,14 +8,14 @@
 
 
 
-template<typename TPrecision>
+template<typename TPrecision, typename LabelType>
 class Rotation : public Animation{
 
   public:
     enum RotationType{ Primary, Secondary};
   private:
 
-    Data<TPrecision> &data;
+    Data<TPrecision, LabelType> &data;
 
 
     FortranLinalg::DenseVector<TPrecision> target;
@@ -31,7 +31,7 @@ class Rotation : public Animation{
     
   public:
     
-    Rotation(Data<TPrecision> &d, RotationType t = Primary) : data(d), type(t){ 
+ Rotation(Data<TPrecision, LabelType> &d, RotationType t = Primary) : data(d), type(t){ 
         using namespace FortranLinalg;
 
       target = DenseVector<TPrecision>(data.V.M());

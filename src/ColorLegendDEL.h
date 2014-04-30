@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "colormapper.h"
+#include "ColorMap.h"
 
 template<typename TPrecision>
 class ColorLegendDEL : public DisplayElement{
@@ -19,14 +19,14 @@ class ColorLegendDEL : public DisplayElement{
   int mod, cur_button; 
   int lw;
   
-  ColorMapper<float> &cmap;
+  Colormap * cmap;
 
   bool isVertical;
 
  public:
   
   //--- Constructor ---//
- ColorLegendDEL( ColorMapper<float> &cm, bool vertical = true ) : cmap(cm), isVertical(vertical){ 
+ ColorLegendDEL( Colormap * cm, bool vertical = true ) : cmap(cm), isVertical(vertical){ 
   };
     
   //--- Set the location of the color legend ---///
@@ -37,7 +37,7 @@ class ColorLegendDEL : public DisplayElement{
     xLeft = xPos;
     yTop = yPos;
     
-    yMid = height*(cmap.rangeMax - cmap.rangeMid) / (cmap.rangeMax - cmap.rangeMin);
+    // yMid = height*(cmap.rangeMax - cmap.rangeMid) / (cmap.rangeMax - cmap.rangeMin);
   };
   
   //--- Initialization ---//
@@ -51,18 +51,18 @@ class ColorLegendDEL : public DisplayElement{
     
     glBegin(GL_QUADS); 
     
-    glColor3f(cmap.rmax, cmap.gmax, cmap.bmax);
+    // glColor3f(cmap.rmax, cmap.gmax, cmap.bmax);
     glVertex2f(xLeft, yTop ) ;
     glVertex2f(xLeft + width, yTop );
 
-    glColor3f(cmap.rmid, cmap.gmid, cmap.bmid);
+    // glColor3f(cmap.rmid, cmap.gmid, cmap.bmid);
     glVertex2f(xLeft + width, yTop + yMid );
     glVertex2f(xLeft, yTop + yMid);    
 
     glVertex2f(xLeft, yTop + yMid );
     glVertex2f(xLeft+width, yTop + yMid);
 
-    glColor3f(cmap.rmin, cmap.gmin, cmap.bmin);
+    // glColor3f(cmap.rmin, cmap.gmin, cmap.bmin);
     glVertex2f(xLeft + width, yTop + height );
     glVertex2f(xLeft, yTop + height);
     
