@@ -184,13 +184,11 @@ class ZoomTreeDEL : public DisplayElement{
   }
 
   void mouse(int button, int state, int x, int y){
-    std::cout << "MOUSE !!" << std::endl;
     xM = x;
     yM = y;
     if(!isInside(x, y)){ return; };
     
     if ( state == GLUT_DOWN ){
-      std::cout << "pickW: " << pickW << " h: " << pickH << std::endl;
 
       mod = glutGetModifiers();
       

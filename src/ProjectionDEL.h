@@ -78,8 +78,8 @@ public:
     glVertex2f( toScreenX( 0 ), toScreenY( + 1.25) );
     glEnd();
       
-    if(data.selectedNode != -1){
-
+    if(data.selectedNode != -1){      
+      
       std::vector<int> pts = data.nodeMap[data.selectedNode]->getPoints();
       
       glBegin(GL_POINTS);
@@ -90,13 +90,7 @@ public:
 	x2 = toScreenY(data.P(1,i));
 	
 	// Color the point based on it's label
-	/*	if(data.labels(pts[i]) == 0){
-	  glColor4f(0, 0.25, 1, alpha);
-	}
-	else{	  
-	  glColor4f(1, 0.45, 0, alpha);
-	  }*/
-	ColorF labelColor = data.colormap->getColor(data.labels(pts[i]));
+	ColorF labelColor = data.colormap->getColor(data.labels(pts[i])-1);
 	glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), alpha);
 	
 	// Draw the point
