@@ -86,12 +86,14 @@ class ZoomTreeDEL : public DisplayElement{
   //--- Check if the mouse is inside the tree ---//
   bool isInside(int x, int y){
     bool inside;
-    if(vertical)
-      inside = (x>xLeft && x < (xLeft+height) &&
-		y>yTop && y < (yTop+width));
-    else
+    if(vertical){
+      inside = (x > yTop && x < (yTop+height) &&
+		y > xLeft && y < (xLeft+width));
+    }
+    else{
       inside = (x>xLeft && x < (xLeft+width) &&
 		y>yTop && y < (yTop+height));
+    }
     return inside;
   };
   
@@ -180,16 +182,16 @@ class ZoomTreeDEL : public DisplayElement{
       }
     }
   }
-  
- 
 
   void mouse(int button, int state, int x, int y){
+    std::cout << "MOUSE !!" << std::endl;
     xM = x;
     yM = y;
     if(!isInside(x, y)){ return; };
     
     if ( state == GLUT_DOWN ){
-      
+      std::cout << "pickW: " << pickW << " h: " << pickH << std::endl;
+
       mod = glutGetModifiers();
       
       GLint vp[4];
