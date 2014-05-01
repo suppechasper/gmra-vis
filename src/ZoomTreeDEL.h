@@ -38,9 +38,6 @@ class ZoomTreeDEL : public DisplayElement{
       lw = 1;
       selected = -1;
       nScales = data.maxScale + 1;
-      
-      // Create the tree
-      createTree();
   };
 
   //--- Initialize the tree ---//
@@ -97,80 +94,6 @@ class ZoomTreeDEL : public DisplayElement{
 		y>yTop && y < (yTop+height));
     return inside;
   };
-
-   //--- Precompute the tree on itialization ---//
-  void createTree(){
-    /*
-    // Set the ranges of the colormaps
-    data.treeColor->setRange(data.minRatio, data.maxRatio);
-    data.entropyColor->setRange(data.minEntropy, data.maxEntropy);
-
-    // Get the root of the tree
-    VisGMRANode<TPrecision> *rootNode = (VisGMRANode<TPrecision> *) data.tree.getRoot();
-    std::list<GMRANode<TPrecision> *> nodes;
-    nodes.push_back(rootNode);
-
-    // Get the maximal width of a node
-    minWidth = 4;
-    maxWidth = rootNode->getPoints().size();         
-    
-    // Iterate through the nodes
-    while( !nodes.empty()){   
-      VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );
-      nodes.pop_front();
-
-      // The scale of this node
-      int scale = node->getScale();	
-      float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));
-      
-      // The starting xposition
-      double xStart = xLeft + node->xPos / maxWidth * width;
-      node->xStart = xStart;
-      double yStart = yTop + (nodeWidth*scale) + (lw*scale);
-
-      // Scale width of node by the number of points in that node
-      double w = node->nPoints  / maxWidth;
-      double wnode = w*width;
-      wnode = wnode < minWidth ? minWidth : wnode;
-      node->wnode = wnode;
-      
-      // Calculate the corners of the quad
-      if(!vertical){
-	node->quad1[0] = xStart;
-	node->quad1[1] = yStart;
-	node->quad2[0] = xStart;
-	node->quad2[1] = yStart + nodeWidth;
-	node->quad3[0] = xStart + wnode;
-	node->quad3[1] = yStart + nodeWidth;
-	node->quad4[0] = xStart + wnode;
-	node->quad4[1] = yStart;
-      }
-      else{
-	node->quad1[0] = yStart;
-	node->quad1[1] = xStart;
-	node->quad2[0] = yStart;
-	node->quad2[1] = xStart + wnode;
-	node->quad3[0] = yStart + nodeWidth;
-	node->quad3[1] = xStart + wnode;
-	node->quad4[0] = yStart + nodeWidth;;
-	node->quad4[1] = xStart;
-      }
-       
-      // Get the color of the node
-      //data.treeColor.getColor(node->ratio, node->color);
-      ColorF labelColor = data.labelsColor->getColor(node->label);
-      //  data.entropyColor.set(labelColor.r, 0.90, labelColor.g, 0.90, labelColor.b, 0.90);
-      // data.entropyColor.set(labelColor.r, 1.0, labelColor.g, 1.0, labelColor.b, 1.0);
-      //data.entropyColor.getColor(node->entropy, node->color);
-  
-      std::vector< GMRANode<TPrecision>* > children = node->getChildren();
-      for(typename std::vector< GMRANode<TPrecision> * >::iterator it =
-            children.begin(); it != children.end(); ++it){
-	nodes.push_back(*it);
-      }
-      // nodes.clear();
-    }*/
-  }
   
   //--- Display the scaled icicle tree ---//
   void display(void){
@@ -182,25 +105,17 @@ class ZoomTreeDEL : public DisplayElement{
       glLineWidth(lw);
       
       // Get the selected node
-      //      VisGMRANode<TPrecision> *node = data.nodeMap[data.selectedNode];
+      VisGMRANode<TPrecision> *sNode = dynamic_cast<VisGMRANode<TPrecision>*>(data.nodeMap[data.selectedNode]);
       std::list<GMRANode<TPrecision> *> nodes;
-      nodes.push_back( (VisGMRANode<TPrecision> *) data.nodeMap[data.selectedNode] );
-    
-      VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );
-
-      VisGMRANode<TPrecision> *root = dynamic_cast<VisGMRANode<TPrecision> *>( data.tree.getRoot());
-
-      std::cout << "root id: " << root->ID << " selected " << node->ID << std::endl;
-
-      DisplayNode * dNode = data.displayTree[node->ID];
-      
-      std::cout << "node->scale: " << node->getScale() << std::endl;
-      // Get the maximal width of a node
-      double maxWidth = node->getPoints().size();      
+      nodes.push_back( sNode );    
+           
+      // Get the minimal and maximal width of a node
+      minWidth = 2.0;
+      maxWidth = sNode->getPoints().size();      
    
       // The scale of this node
-      int startScale = node->getScale();
-      int startX = node->xPos;
+      int startScale = sNode->getScale();
+      int startX = sNode->xPos;
 	    
       while( !nodes.empty()){           
 	
@@ -208,12 +123,12 @@ class ZoomTreeDEL : public DisplayElement{
 	nodes.pop_front();    
       
 	// The scale of this node
-      int scale = node->getScale()-startScale;
-      float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));
-      
-      //    if(scale >= nScales ){/
-      //	break;
-      // }
+	int scale = node->getScale()-startScale;
+	float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));
+	
+	if(scale >= nScales ){
+	  break;
+       }
 
       // The starting xposition
       int xStart = xLeft + (node->xPos-startX) / maxWidth * width;
@@ -262,7 +177,7 @@ class ZoomTreeDEL : public DisplayElement{
 	    children.begin(); it != children.end(); ++it){
 	nodes.push_back(*it);
       }
-      } 
+      }
     }
   }
   

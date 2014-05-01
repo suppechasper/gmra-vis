@@ -101,7 +101,7 @@ public:
     
     // The zoomed icicle tree
     ZoomTreeDEL<TPrecision, LabelType> *ztd = new ZoomTreeDEL<TPrecision, LabelType>(data);
-    ztd->location(10, 825, 800, 300);
+    ztd->location(10, 815, 700, 300);
     elements.push_back(ztd);
     
     // Sunburst tree

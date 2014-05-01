@@ -75,7 +75,10 @@ class ColorLegendDEL : public DisplayElement{
     glVertex2f(xLeft + width, yTop + yMid );
     glVertex2f(xLeft, yTop + yMid);
     
-    glEnd();
+  
+
+
+  glEnd();
   };
   
   void reshape(int w, int h){};
