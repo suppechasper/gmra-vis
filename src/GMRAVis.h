@@ -17,7 +17,7 @@
 #include "MultiscaleProjectionDEL.h"
 #include "ColorLegendDEL.h"
 #include "ParallelDEL.h"
-#include "SunburstTreeDel.h"
+#include "SunBurstTreeDel.h"
 
 #include <math.h>
 #include <stdlib.h>

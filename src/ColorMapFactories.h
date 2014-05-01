@@ -13,7 +13,7 @@
 #ifndef COLORMAPFACTORIES_H
 #define COLORMAPFACTORIES_H
 
-#include "colormap.h"
+#include "ColorMap.h"
 
 //-----------------------------------------------//
 // Some predefined colormaps

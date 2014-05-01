@@ -2,15 +2,15 @@
 #define GMRATREE_H
 
 #include "DenseVector.h"
-//#include "NodeDistance.h"
+#include "NodeDistance.h"
 
 #include <list>
 #include <vector>
 
 #include <iostream>
 
-template <typename TPrecision>
-class NodeDistance;
+//template <typename TPrecision>
+//class NodeDistance;
 
 
 //Node class
@@ -105,7 +105,7 @@ class GMRANode{
 
 
 
-    void computeRadius(NodeDistance<TPrecision> *dist){
+    virtual void computeRadius(NodeDistance<TPrecision> *dist){
       CalculateRadius rc(this, dist);
       radius = rc.calculateRadius();
     };
@@ -113,7 +113,7 @@ class GMRANode{
 
 
 
-    void computeLocalRadius(NodeDistance<TPrecision> *dist){
+    virtual void computeLocalRadius(NodeDistance<TPrecision> *dist){
       NodeVector &kids = getChildren();
       localRadius = 0;
       for(int i=0; i<kids.size(); i++){
@@ -311,6 +311,17 @@ class GMRANodeDecorator : public GMRANode<TPrecision>{
     virtual void affine(FortranLinalg::DenseMatrix<TPrecision> &A){
       node->affine(A);
     }; 
+    
+    virtual void computeRadius(NodeDistance<TPrecision> *dist){
+      node->computeRadius(dist);
+    };
+
+
+
+
+    virtual void computeLocalRadius(NodeDistance<TPrecision> *dist){
+      node->computeLocalRadius(dist);
+    };
 
 };
 

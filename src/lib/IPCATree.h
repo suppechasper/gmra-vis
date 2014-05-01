@@ -358,6 +358,7 @@ class IPCANode : public GMRANodeBase<TPrecision>{
       phi.deallocate();
       center.deallocate();
       mse.deallocate();
+      a.deallocate();
     };
 
 
@@ -429,7 +430,7 @@ class IPCANode : public GMRANodeBase<TPrecision>{
             mid(i) += ( maxP(i)-minP(i) * s );
           }
         }
-        else{
+        else{          
           Linalg<TPrecision>::Add(mid, maxP, mid);
           Linalg<TPrecision>::Scale(mid, 0.5, mid);
         }
@@ -718,7 +719,7 @@ class IPCATree : public GMRATree<TPrecision>{
 
   public:
     enum StoppingCriterium {TOTAL_R2, NODE_R2, NODE_MSE, NODE_RADIUS,
-      RELATIVE_NODE_RADIUS};
+      RELATIVE_NODE_RADIUS, MASS_RADIUS};
 
   private:
     typedef typename IPCANode<TPrecision>::SplitStrategy SplitStrategy;
@@ -738,7 +739,7 @@ class IPCATree : public GMRATree<TPrecision>{
 
 
     void buildTreeRecursive(IPCANode<TPrecision> *node, FortranLinalg::DenseMatrix<TPrecision>
-        X, TPrecision rootMSE, TPrecision rootRadius){
+        X, TPrecision rootMSE, TPrecision rootRadius, TPrecision nPoints){
 
       using namespace FortranLinalg;
 
@@ -748,21 +749,26 @@ class IPCATree : public GMRATree<TPrecision>{
       TPrecision mse = node->mse( node->mse.N() - 1);
       TPrecision relativeR2 = mse / rootMSE;
       TPrecision relativeRadius = node->getL2Radius() / rootRadius;
-    
+      TPrecision mass = node->getPoints().size() / nPoints;
+      TPrecision massRadius = mass * node->getL2Radius();
       TPrecision R2 = mse / node->mse(0);
 
 
 
 #ifdef VERBOSE
+      std::cout << "MinPoints : " << minPoints << std::endl;
       std::cout << "Node R^2 : " << R2 << std::endl;
       std::cout << "Node total R^2 : " << relativeR2 << std::endl;
       std::cout << "Node MSE : " << mse << std::endl;
       std::cout << "Node L2 radius : " << node->getL2Radius() << std::endl;
+      std::cout << "Node relative L2 radius : " << relativeRadius << std::endl;
+      std::cout << "Node mass : " << mass << std::endl;
+      std::cout << "Node mass * radius : " << massRadius << std::endl;
       std::cout << "Node dim : " << node->phi.N() << std::endl << std::endl;
 #endif
 
 
-      if( node->getPoints().size() < std::max(minPoints, (unsigned int) 2 ) ){ 
+      if( node->getPoints().size() <= std::max(minPoints, (unsigned int) 1 ) ){ 
         return;
       }
       if(stop == TOTAL_R2 && relativeR2 <= epsilon){
@@ -778,6 +784,9 @@ class IPCATree : public GMRATree<TPrecision>{
         return;
       }
       if(stop == RELATIVE_NODE_RADIUS && relativeRadius <= epsilon){
+        return;
+      }      
+      if(stop == MASS_RADIUS && massRadius <= epsilon){
         return;
       }
 
@@ -799,7 +808,7 @@ class IPCATree : public GMRATree<TPrecision>{
           IPCANode<TPrecision> *n = new IPCANode<TPrecision>(X, children[i], *nf,
               splitDirectionStrategy, splitStrategy, maxKidDim);
           node->addChild(n, i);
-          buildTreeRecursive(n, X, rootMSE, rootRadius);
+          buildTreeRecursive(n, X, rootMSE, rootRadius, nPoints);
         }
       }
 
@@ -852,7 +861,7 @@ class IPCATree : public GMRATree<TPrecision>{
       //  root = new IPCANode<TPrecision>(Xc);
       //}
       buildTreeRecursive( (IPCANode<TPrecision>*) root, Xd, root->mse(0),
-          root->getL2Radius() ); 
+          root->getL2Radius(), root->getPoints().size()); 
 
       this->setRoot(root);
       this->setupParents();

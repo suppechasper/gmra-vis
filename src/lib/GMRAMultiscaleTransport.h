@@ -50,20 +50,20 @@ class GMRATransportNodeBase : public TransportNode<TPrecision>{
   public:
   
     GMRATransportNodeBase(GMRATransportNodeDecorator<TPrecision> *n, NodeDistance<TPrecision> *d, int
-        id) :  dist(d), TransportNode<TPrecision>(id), node(n) {
+        id, int scale) : TransportNode<TPrecision>(id, scale), dist(d), node(n) {
     };
 
 
     virtual ~GMRATransportNodeBase(){};
 
 
-    virtual TPrecision getLocalNodeRadius() {
+    virtual TPrecision getLocalNodeRadius() const{
       return node->getLocalRadius();
     };
 
    
     
-    virtual TPrecision getNodeRadius() {
+    virtual TPrecision getNodeRadius() const{
       return node->getRadius( );
     };
 
@@ -162,14 +162,14 @@ class GMRATransportNode : public GMRATransportNodeBase<TPrecision>{
   public:
   
     GMRATransportNode(GMRATransportNodeDecorator<TPrecision> *n, NodeDistance<TPrecision> *d, int
-        id) :  GMRATransportNodeBase<TPrecision>(n, d, id){
+        id, int scale) :  GMRATransportNodeBase<TPrecision>(n, d, id, scale){
     };
 
 
 
-    virtual TPrecision getTransportCost(TransportNode<TPrecision> *other, double p) const{
-       GMRATransportNode<TPrecision> *o = dynamic_cast<
-         GMRATransportNode<TPrecision>* >(other);
+    virtual TPrecision getTransportCost(const TransportNode<TPrecision> *other, double p) const{
+       const GMRATransportNode<TPrecision> *o = dynamic_cast<
+         const GMRATransportNode<TPrecision>* >(other);
 
        GMRATransportNodeDecorator<TPrecision> *n1 = this->getGMRANode();
        GMRATransportNodeDecorator<TPrecision> *n2 = o->getGMRANode();
@@ -202,49 +202,66 @@ class GMRATransportNodeMS : public GMRATransportNodeBase<TPrecision>{
   public:
   
     GMRATransportNodeMS(GMRATransportNodeDecorator<TPrecision> *n, NodeDistance<TPrecision> *d, int
-        id) :  GMRATransportNodeBase<TPrecision>( n, d, id ){
+        id, int scale) :  GMRATransportNodeBase<TPrecision>( n, d, id, scale ){
     };
 
 
-    virtual TPrecision getTransportCost(TransportNode<TPrecision> *other, double p) const{
+    virtual TPrecision getTransportCost(const TransportNode<TPrecision> *other, double p) const{
       using namespace FortranLinalg;
-       GMRATransportNodeBase<TPrecision> *o = dynamic_cast<
-         GMRATransportNodeBase<TPrecision>* >(other);
+       const GMRATransportNodeBase<TPrecision> *o = dynamic_cast<
+         const GMRATransportNodeBase<TPrecision>* >(other);
+           
+         GMRATransportNodeBase<TPrecision> *p1 = dynamic_cast<
+            GMRATransportNodeBase<TPrecision>* >( this->getParent());
+         GMRATransportNodeBase<TPrecision> *p2 = dynamic_cast<
+            GMRATransportNodeBase<TPrecision>* >( o->getParent() );
 
-       GMRATransportNodeBase<TPrecision> *p1 = dynamic_cast<
-         GMRATransportNodeBase<TPrecision>* >( this->getParent() );
-       GMRATransportNodeBase<TPrecision> *p2 = dynamic_cast<
-         GMRATransportNodeBase<TPrecision>* >( o->getParent() );
-       if(p1 == NULL || p2 == NULL){
-         return pow( this->dist->distance(
-               this->getGMRANode()->getDecoratedNode(),
-                  o->getGMRANode()->getDecoratedNode() ), p );
+       TPrecision pCost;
+       if(o->getScale() < this->getScale()){
+         pCost = p1->getTransportCost( o, p );
+         
+         pCost += pow( this->dist->distance( this->getGMRANode(),
+               p1->getGMRANode()), p );
        }
+       else if(o->getScale() > this->getScale() ){
+         pCost = p2->getTransportCost( this, p );
+         
+         pCost += pow( this->dist->distance( o->getGMRANode(),
+               p2->getGMRANode()), p ); }
+       else{
 
-       //TPrecision pCost = 0;
-       //if(recursive){
-       TPrecision pCost = p1->getTransportCost(p2, p);
-       //}
 
-       DenseVector<TPrecision> &x1 = p1->getGMRANode()->getCenter();
-       DenseVector<TPrecision> &x2 = p2->getGMRANode()->getCenter();
-       DenseVector<TPrecision> delta = Linalg<TPrecision>::Subtract(x2, x1);
-       
-      // DenseVector<TPrecision> &x3 = this->getGMRANode()->getCenter();
-      // DenseVector<TPrecision> &x4 = o->getGMRANode()->getCenter();
-      // DenseVector<TPrecision> delta2 = Linalg<TPrecision>::Subtract(x4, x3);
-      // std::cout << delta(0) << " , " << delta(1) << std::endl;
-      // std::cout << delta2(0) << " , " << delta2(1) << std::endl;
+         if(p1 == NULL || p2 == NULL){
+           return pow( this->dist->distance( this->getGMRANode(),
+                 o->getGMRANode() ), p );
+         }
 
-       this->getGMRANode()->translate( delta );
-       pCost += pow( this->dist->distance(
-              this->getGMRANode()->getDecoratedNode(),
-                 o->getGMRANode()->getDecoratedNode() ), p );
+         //TPrecision pCost = 0;
+         //if(recursive){
+         pCost = p1->getTransportCost(p2, p);
+         //}
 
-       Linalg<TPrecision>::Scale( delta, -1, delta );
-       this->getGMRANode()->translate( delta );
 
-       delta.deallocate();
+         DenseVector<TPrecision> &x1 = p1->getGMRANode()->getCenter();
+         DenseVector<TPrecision> &x2 = p2->getGMRANode()->getCenter();
+         DenseVector<TPrecision> delta = Linalg<TPrecision>::Subtract(x2, x1);
+
+         // DenseVector<TPrecision> &x3 = this->getGMRANode()->getCenter();
+         // DenseVector<TPrecision> &x4 = o->getGMRANode()->getCenter();
+         // DenseVector<TPrecision> delta2 = Linalg<TPrecision>::Subtract(x4, x3);
+         // std::cout << delta(0) << " , " << delta(1) << std::endl;
+         // std::cout << delta2(0) << " , " << delta2(1) << std::endl;
+
+         this->getGMRANode()->translate( delta );
+         pCost += pow( this->dist->distance( this->getGMRANode(),
+               o->getGMRANode() ), p );
+
+         Linalg<TPrecision>::Scale( delta, -1, delta );
+         this->getGMRANode()->translate( delta );
+
+         delta.deallocate();
+
+       }
 
        return pCost;
 
@@ -355,7 +372,7 @@ class GMRAMultiscaleTransportLevel : public MultiscaleTransportLevel<TPrecision>
 
         std::vector< int > idCounter(ms.maxScale+1, 0);
 
-        for(int i=0; i < ms.maxScale+1; i++){
+        for(int i=0; i <= ms.maxScale; i++){
           levels[i] = new GMRAMultiscaleTransportLevel<TPrecision>(nh, i);
         }
 
@@ -397,10 +414,10 @@ class GMRAMultiscaleTransportLevel : public MultiscaleTransportLevel<TPrecision>
           GMRATransportNodeBase<TPrecision> *tNode;
          
           if(multiscaleCost){  
-            tNode = new GMRATransportNodeMS<TPrecision>( dec, nh.getNodeDistance(), idCounter[scale] );
+            tNode = new GMRATransportNodeMS<TPrecision>( dec, nh.getNodeDistance(), idCounter[scale], scale );
           }
           else{
-            tNode = new GMRATransportNode<TPrecision>( dec, nh.getNodeDistance(), idCounter[scale] );
+            tNode = new GMRATransportNode<TPrecision>( dec, nh.getNodeDistance(), idCounter[scale], scale );
           }
 
           idCounter[scale] += 1;
@@ -431,6 +448,7 @@ class GMRAMultiscaleTransportLevel : public MultiscaleTransportLevel<TPrecision>
             }
             else{
               tNode->addChild(tNode);
+              //dec->nodemap[scale+1] = tNode;
             }
           }
           

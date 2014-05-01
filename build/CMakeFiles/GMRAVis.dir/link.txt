@@ -1,1 +1,0 @@
-/usr/bin/c++    -Wno-deprecated -stdlib=libc++ -mmacosx-version-min=10.7 -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/GMRAVis.dir/GMRAVisCmdLine.cpp.o  -o GMRAVis  -lblas -llapack -framework AGL -framework OpenGL -framework GLUT -framework Cocoa 

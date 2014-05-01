@@ -16,6 +16,17 @@ TARGET_LINK_LIBRARIES(GMRAVis
     ${GLUT_LIBRARIES}
 )
 
+ADD_EXECUTABLE(CreateIPCATree CreateIPCATree.cxx )
+TARGET_LINK_LIBRARIES(CreateIPCATree
+   # gfortran
+    blas
+    lapack 
+    ${OPENGL_LIBRARIES}  
+    ${GLUT_LIBRARIES}
+)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 #set(CUSTOM_CFLAGS ${CUSTOM_CFLAGS}
  #  -Wall 
  #)
