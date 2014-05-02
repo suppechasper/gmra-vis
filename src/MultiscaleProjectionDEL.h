@@ -248,8 +248,8 @@ class MultiscaleProjectionDEL : public DisplayElement{
           IPCANode<TPrecision> *node= dynamic_cast<IPCANode<TPrecision> *>( vnode->getDecoratedNode() );
 
           if(button == GLUT_LEFT_BUTTON){
-            //data.setSelected(selected);
-
+            data.setSelected(selected);
+	    data.selectedIndex = -1;
             DenseVector<TPrecision> t = 
               Linalg<TPrecision>::ExtractColumn(node->phi, 0);
             rotation.setTarget1(t);
@@ -274,7 +274,7 @@ class MultiscaleProjectionDEL : public DisplayElement{
             }
           }
         }
-
+	data.selectedIndex = -1;
         selected = -1;
       }
     };
@@ -418,22 +418,22 @@ class MultiscaleProjectionDEL : public DisplayElement{
       TPrecision l = Linalg<TPrecision>::Length(xmp);
 
       alpha = 1 - l/maxRadius;
+      //std::cout << "alpha: " << alpha << std::endl;
+      if(alpha < .2)
+	alpha = .2;
 
       Linalg<TPrecision>::Subtract(xm, xrm, xm);
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
+      float lineW = 3;
       ColorF col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
 	getColor(data.labelIndex[vnode->label], vnode->entropy);
-      float lineW = 3;
       if(vnode->ID == 0){
 	col = dkgray;
 	lineW = 1;
       }
       else if(vnode->ID != data.selectedNode) {
 	lineW = 1;
-	//	col = data.colormap->getColor(data.labelIndex[vnode->label], vnode->entropy);
-	col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
-	  getColor(data.labelIndex[vnode->label], vnode->entropy);
       }
 
       //draw circle

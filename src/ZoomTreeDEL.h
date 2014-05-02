@@ -212,6 +212,7 @@ class ZoomTreeDEL : public DisplayElement{
         int tmp = selectBuf[i*4 + 3];
         if(tmp != -1){
           selected = tmp;
+	  data.selectedIndex = -1;
         }
       }
       
