@@ -422,11 +422,14 @@ class MultiscaleProjectionDEL : public DisplayElement{
       Linalg<TPrecision>::Subtract(xm, xrm, xm);
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
-      ColorF col = green;
+      ColorF col = cyan;
+      float lineW = 3;
       if(vnode->ID == 0){
 	col = dkgray;
+	lineW = 1;
       }
       else if(vnode->ID != data.selectedNode) {
+	lineW = 1;
 	//	col = data.colormap->getColor(data.labelIndex[vnode->label], vnode->entropy);
 	col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
 	  getColor(data.labelIndex[vnode->label], vnode->entropy);
@@ -434,6 +437,7 @@ class MultiscaleProjectionDEL : public DisplayElement{
 
       //draw circle
       glLoadName(vnode->ID);
+      glLineWidth(lineW);
       glColor4f(col[0], col[1], col[2], alpha);
       glBegin(GL_LINE_LOOP);
       for(int i=0; i<BC.N(); i++){
