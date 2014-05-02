@@ -124,7 +124,7 @@ class MultiscaleProjectionDEL : public DisplayElement{
           //is currently stored instead of the GWTInfo
 
 
-        drawNode(0, 0.25);
+	drawNode(0, 0.25);
 /*
         for(std::set<int>::iterator it = nodes.begin();
             it != nodes.end(); ++it){
@@ -362,14 +362,12 @@ class MultiscaleProjectionDEL : public DisplayElement{
       } 
     };
 
-
-
-
     void drawNode(int nodeID, float alpha){
       drawNode(data.nodeMap[nodeID], alpha);
     };
 
     void drawNode(GMRANode<TPrecision> *gnode, float alpha){
+
       using namespace FortranLinalg;
       VisGMRANode<TPrecision> *vnode  = dynamic_cast<VisGMRANode<TPrecision> *>( gnode);
       IPCANode<TPrecision> *node= dynamic_cast<IPCANode<TPrecision> *>( vnode->getDecoratedNode() );
@@ -424,12 +422,14 @@ class MultiscaleProjectionDEL : public DisplayElement{
       Linalg<TPrecision>::Subtract(xm, xrm, xm);
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
-      ColorF col = cyan;
+      ColorF col = green;
       if(vnode->ID == 0){
 	col = dkgray;
       }
       else if(vnode->ID != data.selectedNode) {
-	col = data.colormap->getColor(data.labelIndex[vnode->label]);
+	//	col = data.colormap->getColor(data.labelIndex[vnode->label], vnode->entropy);
+	col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
+	  getColor(data.labelIndex[vnode->label], vnode->entropy);
       }
 
       //draw circle

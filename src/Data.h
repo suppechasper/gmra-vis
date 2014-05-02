@@ -231,33 +231,14 @@ public:
    FortranLinalg::DenseVector<TPrecision> sigma = root->sigma;
    TPrecision maxS = FortranLinalg::Linalg<TPrecision>::Max(sigma);
    minCent = minC - maxP*(3*maxS);
-   maxCent = maxC + maxP*(maxS*3);
+   maxCent = maxC + maxP*(3*maxS);
    
-
    maxNodeSize = 0;
    int nodeCount = 0;
    while( !nodes.empty() ){
      VisGMRANode<TPrecision> *node = (VisGMRANode<TPrecision> *) nodes.front();
      IPCANode<TPrecision> *inode = dynamic_cast<IPCANode<TPrecision> *>(node->getDecoratedNode());
      nodes.pop_front();
-     
-    
-
-    
-
-     /* for(int pc = 0; pc < sigma.N(); pc++){
-       // maxp = FortranLinalg::Linalg<TPrecision>::Max(phi(pc));
-
-       float numSigmas = 3*sigma(pc);
-       for(int i = 0; i < center.N(); i++){
-	 float tmp = phi(i, pc)*numSigmas;
-	 minCenter[i] = minCenter[i] < center(i)-tmp ? minCenter[i] : center(i)-tmp;
-	 maxCenter[i] = maxCenter[i] > center(i)+tmp ? maxCenter[i] : center(i)+tmp;
-    
-	 minCent = minCent < center(i)-tmp ? minCent : center(i)-tmp;
-	 maxCent = maxCent > center(i)+tmp ? maxCent : center(i)+tmp;
-	 }
-     }*/
 
      // Find the maximum number of points in a node
      if(node->getPoints().size() != tree.getRoot()->getPoints().size())
