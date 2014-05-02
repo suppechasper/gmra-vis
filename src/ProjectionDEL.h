@@ -90,7 +90,7 @@ public:
 	x2 = toScreenY(data.P(1,i));
 	
 	// Color the point based on it's label
-	ColorF labelColor = data.colormap->getColor(data.labels(pts[i])-1);
+	ColorF labelColor = data.colormap->getColor(data.labelIndex[data.labels(pts[i])]);
 	glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), alpha);
 	
 	// Draw the point
