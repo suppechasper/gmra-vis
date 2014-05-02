@@ -331,8 +331,11 @@ public:
 
    // Set the colormap for the passed in scheme
    if(colormapScheme == "entropy"){
-     std::cout << "anel: " << labelWeights.size() << std::endl;
-     ColormapFactory * factory = new Paired12DiscreteGreyscaleColormapFactory(labelWeights.size());
+     ColormapFactory * factory;
+     if(labelWeights.size() < 8)
+       factory = new Set1DiscreteGreyscaleColormapFactory(labelWeights.size());
+     else
+       factory = new Paired12DiscreteGreyscaleColormapFactory(labelWeights.size());
      colormap = factory->getColormap();
      dynamic_cast<TwoDDiscreteColormap*>(colormap)->setFactoryRange(minEntropy, 
 								    maxEntropy);

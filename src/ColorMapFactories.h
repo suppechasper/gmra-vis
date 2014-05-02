@@ -130,6 +130,16 @@ public:
 				  numColors, minI, maxI, minF, maxF){}
 };
 
+class Set1DiscreteGreyscaleColormapFactory : public TwoDDiscreteColormapFactory{
+
+public:
+  Set1DiscreteGreyscaleColormapFactory(float numColors=10, float minI=0.0, float maxI= 1.0,
+				       float minF=0.0, float maxF=0.0)
+    : TwoDDiscreteColormapFactory(std::vector<ColorF>(std::begin(set1class9), std::end(set1class9)),
+				  new GreyscaleColormapFactory(),
+				  numColors, minI, maxI, minF, maxF){}
+};
+
 
 
 
