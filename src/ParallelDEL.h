@@ -128,8 +128,8 @@ class ParallelDEL : public DisplayElement{
 	float numSigmas = 3*sigma(pc);
 
 	// Get the color of the line
-	ColorF color = gray;// data.pcColors->getColor(pc);
-	glColor3f(color.r()+.25, color.g()+.25, color.b()+.25);
+	ColorF color = dkbluegray+.35;// data.pcColors->getColor(pc);
+	glColor3f(color.r(), color.g(), color.b());
 
 	// Draw the line strip
 	glBegin(GL_LINE_STRIP);
@@ -153,8 +153,8 @@ class ParallelDEL : public DisplayElement{
 	float numSigmas = 3*sigma(pc);
 
 	// Get the color of the line
-    	ColorF color = gray;//data.pcColors->getColor(pc);
-	glColor3f(color.r()-.25, color.g()-.25, color.b()-.25);
+    	ColorF color = dkbluegray;//data.pcColors->getColor(pc);
+	glColor3f(color.r(), color.g(), color.b());
 
 	// Draw the line strip
 	glBegin(GL_LINE_STRIP);
@@ -178,8 +178,8 @@ class ParallelDEL : public DisplayElement{
 	float numSigmas = 3*sigma(pc);
 
 	// Get the color of the line
-	ColorF color = gray;//data.pcColors->getColor(pc);
-
+	ColorF colorLt = dkbluegray+.35;//data.pcColors->getColor(pc);
+	ColorF colorDk = dkbluegray;
 	// Draw the quad strip
 	glBegin(GL_QUAD_STRIP);
 	xStart = xLeft;
@@ -194,9 +194,9 @@ class ParallelDEL : public DisplayElement{
 				      (float)data.maxCenter[d], yTop,yTop+height);
 
 	  // Draw the vertices & change their colors
-	  glColor4f(color.r(), color.g(), color.b(), 0.25);
+	  glColor4f(colorLt.r(), colorLt.g(), colorLt.b(), 0.25);
 	  glVertex2f(xStart,ptLocationUp);
-	  glColor4f(color.r()-.35, color.g()-.35, color.b()-.35, 0.25);
+	  glColor4f(colorDk.r(), colorDk.g(), colorDk.b(), 0.25);
 	  glVertex2f(xStart,ptLocationDwn);
 	  xStart += space;
 	}
@@ -206,7 +206,7 @@ class ParallelDEL : public DisplayElement{
       // Draw the central line
       glLineWidth(2);
       glBegin(GL_LINE_STRIP);
-      glColor3f(0.75, 0.75, 0.75);
+      glColor3f(0.85, 0.85, 0.85);
       xStart = xLeft;
       for(int i = 0; i < center.N(); i++){
 	float ptLocation = affine((float)data.minCenter[i], (float)center(i), 

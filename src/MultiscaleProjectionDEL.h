@@ -424,9 +424,9 @@ class MultiscaleProjectionDEL : public DisplayElement{
       Linalg<TPrecision>::Subtract(xm, xrm, xm);
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
-      ColorF col = green;
+      ColorF col = cyan;
       if(vnode->ID == 0){
-	col = magenta;
+	col = dkgray;
       }
       else if(vnode->ID != data.selectedNode) {
 	col = data.colormap->getColor(data.labelIndex[vnode->label]);
