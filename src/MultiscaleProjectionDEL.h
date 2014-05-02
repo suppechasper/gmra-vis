@@ -422,7 +422,8 @@ class MultiscaleProjectionDEL : public DisplayElement{
       Linalg<TPrecision>::Subtract(xm, xrm, xm);
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
-      ColorF col = cyan;
+      ColorF col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
+	getColor(data.labelIndex[vnode->label], vnode->entropy);
       float lineW = 3;
       if(vnode->ID == 0){
 	col = dkgray;
