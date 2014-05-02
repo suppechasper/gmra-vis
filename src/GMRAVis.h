@@ -96,12 +96,12 @@ public:
 
     // Add the icicle tree
     TreeDEL<TPrecision, LabelType> *pd = new TreeDEL<TPrecision, LabelType>(data);
-    pd->location(10, 10, 800, 300);
+    pd->location(10, 10, 900, 250);
     elements.push_back(pd);
     
     // The zoomed icicle tree
     ZoomTreeDEL<TPrecision, LabelType> *ztd = new ZoomTreeDEL<TPrecision, LabelType>(data);
-    ztd->location(10, 815, 700, 300);
+    ztd->location(10, 900, 600, 250);
     elements.push_back(ztd);
     
     // Sunburst tree
@@ -116,26 +116,23 @@ public:
     elements.push_back(cld);
     */
 
-
     // The scatter plot
-     ProjectionDEL<TPrecision, LabelType> *pDel = new ProjectionDEL<TPrecision, LabelType>(data);
-    pDel->location(550, 320, 350, 350);
+    ProjectionDEL<TPrecision, LabelType> *pDel = new ProjectionDEL<TPrecision, LabelType>(data);
+    pDel->location(900, 320, 350, 350);
     elements.push_back(pDel);
      
-
     // The parallel coordinates plot
     ParallelDEL<TPrecision, LabelType> * pc = new ParallelDEL<TPrecision, LabelType>(data);
-    pc->location(250, 800, 500, 200);
+    pc->location(10, 740, 1490, 150);
     elements.push_back(pc);
     
 
-    /*
     // The ellipses
     MultiscaleProjectionDEL<TPrecision, LabelType> *projectionDel = new
       MultiscaleProjectionDEL<TPrecision, LabelType>(data, animator);
-    projectionDel->location(10, 220, 400, 400);
+    projectionDel->location(188, 320, 350, 350);
     elements.push_back(projectionDel);
-    */
+    
     
     
     

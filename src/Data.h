@@ -150,8 +150,11 @@ public:
   // Min/Max values for colormapping
   int minRatio, maxRatio;  
   double minEntropy, maxEntropy;
-  std::vector<float> minCenter;
-  std::vector<float> maxCenter;
+  std::vector<float> minCenter, maxCenter;
+  // std::vector<float> 
+  //float minCenter, maxCenter;
+  float minSigma, maxSigma;
+  float minPhi, maxPhi;
 
   int maxNodeSize;
 
@@ -222,22 +225,27 @@ public:
    ColormapFactory * factory = new PairedDiscreteColormapFactory(root->sigma.N());
    pcColors = factory->getColormap();
 
-   // Initialize the min/max centers
-   minCenter.resize(root->getCenter().N());
-   maxCenter.resize(root->getCenter().N());
-
+   
    maxNodeSize = 0;
    int nodeCount = 0;
    while( !nodes.empty() ){
      VisGMRANode<TPrecision> *node = (VisGMRANode<TPrecision> *) nodes.front();
      IPCANode<TPrecision> *inode = dynamic_cast<IPCANode<TPrecision> *>(node->getDecoratedNode());
      nodes.pop_front();
-
+     
      // Find the min/max center values
+     minCenter.resize(root->getCenter().N());
+     maxCenter.resize(root->getCenter().N());
      FortranLinalg::DenseVector<TPrecision> center = node->getCenter();
-     for(int i = 0; i < center.N(); i++){
-       minCenter[i] = minCenter[i] < center(i) ? minCenter[i] : center(i);
-       maxCenter[i] = maxCenter[i] > center(i) ? maxCenter[i] : center(i);
+     FortranLinalg::DenseMatrix<TPrecision> phi = inode->phi;
+     FortranLinalg::DenseVector<TPrecision> sigma = inode->sigma;
+     for(int pc = 0; pc < sigma.N(); pc++){
+       float numSigmas = 3*sigma(pc);
+       for(int i = 0; i < center.N(); i++){
+	 float tmp = phi(i, pc)*numSigmas;
+	 minCenter[i] = minCenter[i] < center(i)-tmp ? minCenter[i] : center(i)-tmp;
+	 maxCenter[i] = maxCenter[i] > center(i)+tmp ? maxCenter[i] : center(i)+tmp;
+       }
      }
 
      // Find the maximum number of points in a node

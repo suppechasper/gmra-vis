@@ -72,10 +72,10 @@ public:
     glLineWidth(1);
     glColor3f(0.75, 0.75, 0.75);
     glBegin(GL_LINES);
-    glVertex2f( toScreenX( - 1.25), toScreenY( 0 ) );
-    glVertex2f( toScreenX( + 1.25), toScreenY( 0 ) );
-    glVertex2f( toScreenX( 0 ), toScreenY( - 1.25) );
-    glVertex2f( toScreenX( 0 ), toScreenY( + 1.25) );
+    glVertex2f( toScreenX( - 1.0), toScreenY( 0 ) );
+    glVertex2f( toScreenX( + 1.0), toScreenY( 0 ) );
+    glVertex2f( toScreenX( 0 ), toScreenY( - 1.0) );
+    glVertex2f( toScreenX( 0 ), toScreenY( + 1.0) );
     glEnd();
       
     if(data.selectedNode != -1){      

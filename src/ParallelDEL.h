@@ -33,7 +33,6 @@ class ParallelDEL : public DisplayElement{
     std::list<GMRANode<TPrecision> *> nodes;
     nodes.push_back(rootNode);
 
-
     // Set the size of the min/max center arrays
     // int N = dynamic_cast<IPCANode<TPrecision> *>(rootNode->getDecoratedNode())->getCenter().N();      
     //data.minCenter.resize(N);
@@ -89,58 +88,55 @@ class ParallelDEL : public DisplayElement{
 
   //--- How to display the plot ---//
   void display(){
-
-    glMatrixMode(GL_MODELVIEW); 	
-    glLoadIdentity();
-      
-    //glPushName(-1); 
-    glPointSize(6);
-    int x1;
-    int x2;
-    float col[4];
-    //col[3] = alpha;
-
+    
+    int numAxes = dynamic_cast<VisGMRANode<TPrecision> *>(data.tree.getRoot())->getCenter().N();
+    int space = (float)width/(numAxes-1);
+    
+    // Draw the axes
+    glLineWidth(1);
+    glColor3f(0.75, 0.75, 0.75);
+    glBegin(GL_LINES);
+    double xStart = xLeft;
+    for(int i = 0; i < numAxes; i++){
+      glVertex2f(xStart, yTop);
+      glVertex2f(xStart, yTop+height);
+      xStart += space;
+    }
+    glEnd();
+    
+    // If we have selected a node, draw the lines
     if(data.selectedNode != -1){
     
       VisGMRANode<TPrecision> *vnode = dynamic_cast<VisGMRANode<TPrecision> *>(data.nodeMap[data.selectedNode]);
       IPCANode<TPrecision> *node = dynamic_cast<IPCANode<TPrecision> *>(vnode->getDecoratedNode());
-      
       FortranLinalg::DenseVector<TPrecision> center = node->getCenter();
       FortranLinalg::DenseMatrix<TPrecision> phi = node->phi;
       FortranLinalg::DenseVector<TPrecision> sigma = node->sigma;
-      /* std::cout << "center.N(): " << center.N() << std::endl;
-	 std::cout << "(rows) phi.M(): " << phi.M() << " phi.N(): " << phi.N() << std::endl; 
-	 std::cout << "sigma.N(): " << sigma.N() << std::endl;*/
-      
-      int numAxes = center.N();
-      int space = width/numAxes;
-      
-      // Draw the axes
-      glLineWidth(1);
-      glColor3f(0.75, 0.75, 0.75);
-      glBegin(GL_LINES);
-      double xStart = xLeft;
-      for(int i = 0; i < numAxes; i++){
-	glVertex2f(xStart, yTop);
-	glVertex2f(xStart, yTop+height);
-	xStart += space;
-      }
-      glEnd();
-  
-     
+          
+      // Set the matrix
+      glMatrixMode(GL_MODELVIEW); 	
+      glLoadIdentity();
+    
       // Draw the individual principle components
       
       // Draw the + std dev
       glLineWidth(1);
-      //for(int pc = 0; pc < sigma.N(); pc++){
-      for(int pc = 0; pc < 1; pc++){
+      for(int pc = 0; pc < sigma.N(); pc++){
+      
+	// Get the #'s of sigmas we are interested in
+	float numSigmas = 3*sigma(pc);
+
+	// Get the color of the line
 	ColorF color = data.pcColors->getColor(pc);
 	glColor3f(color.r(), color.g(), color.b());
+
+	// Draw the line strip
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
-	  float ptLocation = affine(data.minCenter[d], (float)(center(d) + phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
-				    data.maxCenter[d], yTop, yTop+height);  
+	  float tmp = phi(d, pc)*numSigmas;
+	  float ptLocation = affine((float)data.minCenter[d], (float)(center(d) + tmp), 
+				    (float)data.maxCenter[d], yTop,yTop+height);
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
 	}
@@ -148,41 +144,56 @@ class ParallelDEL : public DisplayElement{
       }
       
       // Draw the - std dev
-      glLineWidth(1);
+       glLineWidth(1);
       for(int pc = 0; pc < sigma.N(); pc++){
-      // for(int pc = 0; pc < 1; pc++){
-	ColorF color = data.pcColors->getColor(pc);
+
+	// Get the #'s of sigmas we are interested in
+	float numSigmas = 3*sigma(pc);
+
+	// Get the color of the line
+    	ColorF color = data.pcColors->getColor(pc);
 	glColor3f(color.r()-.5, color.g()-.5, color.b()-.5);
+
+	// Draw the line strip
 	glBegin(GL_LINE_STRIP);
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
-	//for(int d = 0; d < 2; d++){
-	
-	  float ptLocation = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
-				    data.maxCenter[d], yTop, yTop+height);  
+	  float tmp = phi(d, pc)*numSigmas;
+	  float ptLocation = affine((float)data.minCenter[d],  
+				    (float)center(d) - tmp, 
+				    (float)data.maxCenter[d], yTop,yTop+height);
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
 	}
 	glEnd();      
-      }
+	}
 
-      // Draw the quad strip
-      glLineWidth(1);
+      // Highlight +/- std dev
       for(int pc = 0; pc < sigma.N(); pc++){
-      //for(int pc = 0; pc < 1; pc++){
-	xStart = xLeft;
-	glBegin(GL_QUAD_STRIP);
+	
+	// Get the #'s of sigmas we are interested in
+	float numSigmas = 3*sigma(pc);
+
+	// Get the color of the line
 	ColorF color = data.pcColors->getColor(pc);
-		for(int d = 0; d < center.N(); d++){
-		  //for(int d = 0; d < 2; d++){
-	  float ptLocationUp = affine(data.minCenter[d], (float)(center(d) + phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
-				      data.maxCenter[d], yTop, yTop+height);  
-	  float ptLocationDwn = affine(data.minCenter[d], (float)(center(d) - phi(d, pc)*(sigma(pc)*sigma(pc)*sigma(pc))), 
-				       data.maxCenter[d], yTop, yTop+height);  
-	  	  
+
+	// Draw the quad strip
+	glBegin(GL_QUAD_STRIP);
+	xStart = xLeft;
+	for(int d = 0; d < center.N(); d++){
+	  float tmp = phi(d, pc)*numSigmas;
+	  // Get the location
+	  float ptLocationUp = affine((float)data.minCenter[d],  
+				      (float)center(d) + tmp, 
+				      (float)data.maxCenter[d], yTop,yTop+height);
+	   float ptLocationDwn = affine((float)data.minCenter[d],  
+				      (float)center(d) - tmp, 
+				      (float)data.maxCenter[d], yTop,yTop+height);
+
+	  // Draw the vertices & change their colors
 	  glColor4f(color.r(), color.g(), color.b(), 0.25);
 	  glVertex2f(xStart,ptLocationUp);
-	  glColor4f(color.r()-.45, color.g()-.45, color.b()-.45, 0.25);
+	  glColor4f(color.r()-.5, color.g()-.5, color.b()-.5, 0.25);
 	  glVertex2f(xStart,ptLocationDwn);
 	  xStart += space;
 	}
@@ -195,12 +206,12 @@ class ParallelDEL : public DisplayElement{
       glColor3f(0.75, 0.75, 0.75);
       xStart = xLeft;
       for(int i = 0; i < center.N(); i++){
-	float ptLocation = affine((float)data.minCenter[i], (float)center(i), (float)data.maxCenter[i], yTop, yTop+height);  
+	float ptLocation = affine((float)data.minCenter[i], (float)center(i), 
+				  (float)data.maxCenter[i], yTop,yTop+height);  
 	glVertex2f(xStart, ptLocation);
 	xStart += space;
       }
       glEnd();
-    
     }
   }
 

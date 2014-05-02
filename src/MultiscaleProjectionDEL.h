@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "Font.h"
-
+#include "ColorDefines.h"
 
 template<typename TPrecision, typename LabelType>
 class MultiscaleProjectionDEL : public DisplayElement{
@@ -426,14 +426,17 @@ class MultiscaleProjectionDEL : public DisplayElement{
 
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
-      float col[3] = {0, 1, 0};
+      //      float col[3] = {0, 1, 0};
+      ColorF col = green;
       if(vnode->ID == 0){
-        col[0] = 1;
-        col[1] = 0;
-        col[2] = 1;
+	col = magenta;
+	//        col[0] = 1;
+	// col[1] = 0;
+        //col[2] = 1;
       }
       else if(vnode->ID != data.selectedNode) {
-        data.treeColor.getColor(vnode->ratio, col);
+	//        data.treeColor.getColor(vnode->ratio, col);
+	col = data.colormap->getColor(vnode->label);
       }
 
       //draw circle
