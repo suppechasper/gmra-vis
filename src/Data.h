@@ -151,10 +151,6 @@ public:
   int minRatio, maxRatio;  
   double minEntropy, maxEntropy;
   std::vector<float> minCenter, maxCenter;
-  // std::vector<float> 
-  //float minCenter, maxCenter;
-  float minSigma, maxSigma;
-  float minPhi, maxPhi;
 
   int maxNodeSize;
 
@@ -166,10 +162,7 @@ public:
   std::string colormapScheme;
   Colormap * colormap;
   Colormap * pcColors;
-  
-  //  Colormap * treeColor;
-  //DiscreteColormap * labelsColor;
-  
+   
   //--- Constructor ---//
  Data( IPCATree<TPrecision> &t,
        FortranLinalg::DenseVector<LabelType> &l, 
@@ -224,7 +217,6 @@ public:
    // Set the colormap for the parallel coordinates
    ColormapFactory * factory = new PairedDiscreteColormapFactory(root->sigma.N());
    pcColors = factory->getColormap();
-
    
    maxNodeSize = 0;
    int nodeCount = 0;
@@ -339,6 +331,7 @@ public:
 
    // Set the colormap for the passed in scheme
    if(colormapScheme == "entropy"){
+     std::cout << "anel: " << labelWeights.size() << std::endl;
      ColormapFactory * factory = new Paired12DiscreteGreyscaleColormapFactory(labelWeights.size());
      colormap = factory->getColormap();
      dynamic_cast<TwoDDiscreteColormap*>(colormap)->setFactoryRange(minEntropy, 

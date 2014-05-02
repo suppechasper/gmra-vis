@@ -421,22 +421,15 @@ class MultiscaleProjectionDEL : public DisplayElement{
 
       alpha = 1 - l/maxRadius;
 
-
       Linalg<TPrecision>::Subtract(xm, xrm, xm);
-
       Linalg<TPrecision>::AddColumnwise(BC, xm, BC);
 
-      //      float col[3] = {0, 1, 0};
       ColorF col = green;
       if(vnode->ID == 0){
 	col = magenta;
-	//        col[0] = 1;
-	// col[1] = 0;
-        //col[2] = 1;
       }
       else if(vnode->ID != data.selectedNode) {
-	//        data.treeColor.getColor(vnode->ratio, col);
-	col = data.colormap->getColor(vnode->label);
+	col = data.colormap->getColor(data.labelIndex[vnode->label]);
       }
 
       //draw circle
