@@ -151,6 +151,7 @@ public:
   int minRatio, maxRatio;  
   double minEntropy, maxEntropy;
   std::vector<float> minCenter, maxCenter;
+  float minCent, maxCent;
 
   int maxNodeSize;
 
@@ -218,6 +219,21 @@ public:
    ColormapFactory * factory = new PairedDiscreteColormapFactory(root->sigma.N());
    pcColors = factory->getColormap();
    
+
+   // Find the min/max center values
+   minCenter.resize(root->getCenter().N());
+   maxCenter.resize(root->getCenter().N());
+   FortranLinalg::DenseVector<TPrecision> center = root->getCenter();
+   TPrecision maxC = FortranLinalg::Linalg<TPrecision>::Max(center);
+   TPrecision minC = FortranLinalg::Linalg<TPrecision>::Min(center);
+   FortranLinalg::DenseMatrix<TPrecision> phi = root->phi;
+   TPrecision maxP = FortranLinalg::Linalg<TPrecision>::MaxAll(phi);
+   FortranLinalg::DenseVector<TPrecision> sigma = root->sigma;
+   TPrecision maxS = FortranLinalg::Linalg<TPrecision>::Max(sigma);
+   minCent = minC - maxP*(3*maxS);
+   maxCent = maxC + maxP*(maxS*3);
+   
+
    maxNodeSize = 0;
    int nodeCount = 0;
    while( !nodes.empty() ){
@@ -225,20 +241,23 @@ public:
      IPCANode<TPrecision> *inode = dynamic_cast<IPCANode<TPrecision> *>(node->getDecoratedNode());
      nodes.pop_front();
      
-     // Find the min/max center values
-     minCenter.resize(root->getCenter().N());
-     maxCenter.resize(root->getCenter().N());
-     FortranLinalg::DenseVector<TPrecision> center = node->getCenter();
-     FortranLinalg::DenseMatrix<TPrecision> phi = inode->phi;
-     FortranLinalg::DenseVector<TPrecision> sigma = inode->sigma;
-     for(int pc = 0; pc < sigma.N(); pc++){
+    
+
+    
+
+     /* for(int pc = 0; pc < sigma.N(); pc++){
+       // maxp = FortranLinalg::Linalg<TPrecision>::Max(phi(pc));
+
        float numSigmas = 3*sigma(pc);
        for(int i = 0; i < center.N(); i++){
 	 float tmp = phi(i, pc)*numSigmas;
 	 minCenter[i] = minCenter[i] < center(i)-tmp ? minCenter[i] : center(i)-tmp;
 	 maxCenter[i] = maxCenter[i] > center(i)+tmp ? maxCenter[i] : center(i)+tmp;
-       }
-     }
+    
+	 minCent = minCent < center(i)-tmp ? minCent : center(i)-tmp;
+	 maxCent = maxCent > center(i)+tmp ? maxCent : center(i)+tmp;
+	 }
+     }*/
 
      // Find the maximum number of points in a node
      if(node->getPoints().size() != tree.getRoot()->getPoints().size())

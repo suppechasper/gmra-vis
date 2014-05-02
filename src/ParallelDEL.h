@@ -136,8 +136,8 @@ class ParallelDEL : public DisplayElement{
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
 	  float tmp = phi(d, pc)*numSigmas;
-	  float ptLocation = affine((float)data.minCenter[d], (float)(center(d) + tmp), 
-				    (float)data.maxCenter[d], yTop,yTop+height);
+	  float ptLocation = affine((float)data.minCent, (float)(center(d) + tmp), 
+				    (float)data.maxCent, yTop,yTop+height);
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
 	}
@@ -161,9 +161,9 @@ class ParallelDEL : public DisplayElement{
 	xStart = xLeft;
 	for(int d = 0; d < center.N(); d++){
 	  float tmp = phi(d, pc)*numSigmas;
-	  float ptLocation = affine((float)data.minCenter[d],  
+	  float ptLocation = affine((float)data.minCent,  
 				    (float)center(d) - tmp, 
-				    (float)data.maxCenter[d], yTop,yTop+height);
+				    (float)data.maxCent, yTop,yTop+height);
 	  glVertex2f(xStart,ptLocation);
 	  xStart += space;
 	}
@@ -186,12 +186,12 @@ class ParallelDEL : public DisplayElement{
 	for(int d = 0; d < center.N(); d++){
 	  float tmp = phi(d, pc)*numSigmas;
 	  // Get the location
-	  float ptLocationUp = affine((float)data.minCenter[d],  
+	  float ptLocationUp = affine((float)data.minCent,  
 				      (float)center(d) + tmp, 
-				      (float)data.maxCenter[d], yTop,yTop+height);
-	   float ptLocationDwn = affine((float)data.minCenter[d],  
+				      (float)data.maxCent, yTop,yTop+height);
+	   float ptLocationDwn = affine((float)data.minCent,  
 				      (float)center(d) - tmp, 
-				      (float)data.maxCenter[d], yTop,yTop+height);
+				      (float)data.maxCent, yTop,yTop+height);
 
 	  // Draw the vertices & change their colors
 	  glColor4f(colorLt.r(), colorLt.g(), colorLt.b(), 0.25);
@@ -209,8 +209,8 @@ class ParallelDEL : public DisplayElement{
       glColor3f(0.85, 0.85, 0.85);
       xStart = xLeft;
       for(int i = 0; i < center.N(); i++){
-	float ptLocation = affine((float)data.minCenter[i], (float)center(i), 
-				  (float)data.maxCenter[i], yTop,yTop+height);  
+	float ptLocation = affine((float)data.minCent, (float)center(i), 
+				  (float)data.maxCent, yTop,yTop+height);  
 	glVertex2f(xStart, ptLocation);
 	xStart += space;
       }
