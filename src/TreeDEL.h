@@ -192,8 +192,6 @@ class TreeDEL : public DisplayElement{
   //--- Display the icicle tree ---//
   void display(void){
 
-    // std::cout << "TREE: " << width << " height: " << height << std::endl;
-    
     glMatrixMode(GL_MODELVIEW); 	
     glLoadIdentity();
       
@@ -220,9 +218,9 @@ class TreeDEL : public DisplayElement{
 
       // Get the color of the node
       // glColor4f(node->color.r(), node->color.g(), node->color.b(), alpha);
-      float alpha = 1.0;
-      //if(data.selectedNode == -1)
-      //	alpha = 1.0;
+      float alpha = 1.00;
+      //  if(data.selectedNode == dNode->getIndex())
+      // 	alpha = 1.0;
       ColorF col = dNode->getColor();
       glColor4f(col.r(), col.g(), col.b(), alpha);
 
@@ -376,6 +374,7 @@ class TreeDEL : public DisplayElement{
         int tmp = selectBuf[3];
         if(tmp != -1){
           selected = tmp;
+	  data.selectedIndex = -1;
         }
       }
       
