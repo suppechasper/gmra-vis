@@ -97,6 +97,19 @@ class ZoomTreeDEL : public DisplayElement{
     return inside;
   };
   
+  //--- Return the color of the node ---//
+  ColorF getColor(VisGMRANode<TPrecision> *node){
+    ColorF col;
+   if(data.colormapScheme == "entropy")
+	col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
+	  getColor(data.labelIndex[node->label], node->entropy);
+      else if(data.colormapScheme == "ratio")
+	col = data.colormap->getColor(node->ratio);
+      else if(data.colormapScheme == "other")
+	std::cout << "not sure on other!" << std::endl;
+   return col;
+  }
+
   //--- Display the scaled icicle tree ---//
   void display(void){
 
@@ -119,70 +132,152 @@ class ZoomTreeDEL : public DisplayElement{
       int startScale = sNode->getScale();
       int startX = sNode->xPos;
 	    
+      // Draw the arraw to the parent
+      VisGMRANode<TPrecision> *pNode = dynamic_cast<VisGMRANode<TPrecision>*>(data.nodeMap[data.selectedNode]->getParent());
+      if(pNode != NULL){
+	
+	// Set the color of the node
+	ColorF col = getColor(pNode);
+	glColor4f(col.r(), col.g(), col.b(), 1.0);
+	
+	// The scale of this node
+	int scale = sNode->getScale()-startScale;
+	float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));   
+
+	// The starting xposition
+	int xStart = xLeft + (sNode->xPos-startX) / maxWidth * width;
+	double yStart = yTop + (nodeWidth*scale) + (lw*scale);
+	
+	// Scale width of node by the number of points in that node
+	double w = sNode->nPoints  / maxWidth;
+	double wnode = w*width;
+	wnode = wnode < minWidth ? minWidth : wnode;
+	
+	// Draw the node
+	glPushName( pNode->ID );         
+	glBegin(GL_POLYGON);           
+	if(!vertical){
+	  glVertex2f(xStart,         yStart);
+	  glVertex2f(xStart,         yStart -25);
+	  glVertex2f(xStart + wnode, yStart -25);
+	  glVertex2f(xStart + wnode, yStart );
+	}
+	else{
+	  glVertex2f(yStart-2,             xStart);
+	  glVertex2f(yStart-2,             xStart + wnode);
+	  glVertex2f(yStart -15, xStart + wnode);
+	  glVertex2f(yStart -30, xStart + (wnode*.5));
+	  glVertex2f(yStart -15, xStart);
+	}      
+	glEnd();
+	glColor4f(0.25, 0.25, 0.25, 1.0);
+	glBegin(GL_LINE_LOOP);           
+	if(!vertical){
+	  glVertex2f(xStart,         yStart);
+	  glVertex2f(xStart,         yStart -25);
+	  glVertex2f(xStart + wnode, yStart -25);
+	  glVertex2f(xStart + wnode, yStart );
+	}
+	else{
+	  glVertex2f(yStart-2,             xStart);
+	  glVertex2f(yStart-2,             xStart + wnode);
+	  glVertex2f(yStart -15, xStart + wnode);
+	  glVertex2f(yStart -30, xStart + (wnode*.5));
+	  glVertex2f(yStart -15, xStart);
+	}      
+	glEnd();
+	glPopName();    
+      }
+
       while( !nodes.empty()){           
 	
 	VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );
 	nodes.pop_front();    
-      
+	
 	// The scale of this node
 	int scale = node->getScale()-startScale;
 	float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));
 	
 	if(scale >= nScales ){
 	  break;
-       }
+	}
+	
+	// The starting xposition
+	int xStart = xLeft + (node->xPos-startX) / maxWidth * width;
+	double yStart = yTop + (nodeWidth*scale) + (lw*scale);
 
-      // The starting xposition
-      int xStart = xLeft + (node->xPos-startX) / maxWidth * width;
-      double yStart = yTop + (nodeWidth*scale) + (lw*scale);
+	// Scale width of node by the number of points in that node
+	double w = node->nPoints  / maxWidth;
+	double wnode = w*width;
+	wnode = wnode < minWidth ? minWidth : wnode;
+	
+	// Set the color of the node
+	ColorF col = getColor(node);
+	float alpha = 1.0;
+	//  if( node->ID == data.selectedNode )
+	//	alpha = 1;   
+	glColor4f(col.r(), col.g(), col.b(), alpha);
+	
+	// Draw the node
+	glPushName( node->ID );         
+	glBegin(GL_QUADS);           
+	if(!vertical){
+	  glVertex2f(xStart,         yStart);
+	  glVertex2f(xStart,         yStart + nodeWidth);
+	  glVertex2f(xStart + wnode, yStart + nodeWidth);
+	  glVertex2f(xStart + wnode, yStart );
+	}
+	else{
+	  glVertex2f(yStart,             xStart);
+	  glVertex2f(yStart,             xStart + wnode);
+	  glVertex2f(yStart + nodeWidth, xStart + wnode);
+	  glVertex2f(yStart + nodeWidth, xStart);
+	}      
+	glEnd();
+	if(node->ID == data.selectedNode){
 
-      // Scale width of node by the number of points in that node
-      double w = node->nPoints  / maxWidth;
-      double wnode = w*width;
-      wnode = wnode < minWidth ? minWidth : wnode;
+	  glLineWidth(4.0);
+	  glBegin(GL_LINES);
+	  glColor4f(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1.0);
+	  glVertex2f(yStart,             xStart-2);
+	  glVertex2f(yStart,             xStart + wnode+2);
+	  glVertex2f(yStart + nodeWidth-2, xStart + wnode+2);
+	  glVertex2f(yStart + nodeWidth-2, xStart-2);
+	  glEnd();
 
-      // Set the color of the node
-      ColorF col;
-      if(data.colormapScheme == "entropy")
-	col = dynamic_cast<TwoDDiscreteColormap*>(data.colormap)->
-	  getColor(data.labelIndex[node->label], node->entropy);
-      else if(data.colormapScheme == "ratio")
-	col = data.colormap->getColor(node->ratio);
-      else if(data.colormapScheme == "other")
-	std::cout << "not sure on other!" << std::endl;
-      float alpha = 1.0;
-      //  if( node->ID == data.selectedNode )
-      //	alpha = 1;   
-      glColor4f(col.r(), col.g(), col.b(), alpha);
+	  glLineWidth(2.0);
+	  glColor4f(data.selectedNodeColor.r(), data.selectedNodeColor.g(), data.selectedNodeColor.b(), 1.0);
+	  glBegin(GL_LINE_LOOP);
+	if(!vertical){
+	  glVertex2f(xStart,         yStart);
+	  glVertex2f(xStart,         yStart + nodeWidth);
+	  glVertex2f(xStart + wnode, yStart + nodeWidth);
+	  glVertex2f(xStart + wnode, yStart );
+	}
+	else{
+	  glVertex2f(yStart,             xStart-2);
+	  glVertex2f(yStart,             xStart + wnode+2);
+	  glVertex2f(yStart + nodeWidth-2, xStart + wnode+2);
+	  glVertex2f(yStart + nodeWidth-2, xStart-2);
+	}    
+	  glEnd();
+
+	
+	}
+	glPopName();    
+	
+	// Get the node's children
+	std::vector< GMRANode<TPrecision>* > children = node->getChildren();
+	for(typename std::vector< GMRANode<TPrecision> * >::iterator it =
+	      children.begin(); it != children.end(); ++it){
+	  nodes.push_back(*it);
+	}
+      }
       
-      // Draw the node
-      glPushName( node->ID );         
-      glBegin(GL_QUADS);           
-      if(!vertical){
-	glVertex2f(xStart,         yStart);
-	glVertex2f(xStart,         yStart + nodeWidth);
-	glVertex2f(xStart + wnode, yStart + nodeWidth);
-	glVertex2f(xStart + wnode, yStart );
-      }
-      else{
-	glVertex2f(yStart,             xStart);
-	glVertex2f(yStart,             xStart + wnode);
-	glVertex2f(yStart + nodeWidth, xStart + wnode);
-	glVertex2f(yStart + nodeWidth, xStart);
-      }      
-      glEnd();
-      glPopName();    
-      
-      // Get the node's children
-      std::vector< GMRANode<TPrecision>* > children = node->getChildren();
-      for(typename std::vector< GMRANode<TPrecision> * >::iterator it =
-	    children.begin(); it != children.end(); ++it){
-	nodes.push_back(*it);
-      }
-      }
+     
     }
   }
-
+  
   void mouse(int button, int state, int x, int y){
     xM = x;
     yM = y;

@@ -114,20 +114,20 @@ public:
     }
     if(data.selectedIndex != -1){
 
-      //std::cout << "
-      	// Convert the points to screen coordinates
-	x1 = toScreenX(data.points(0,data.selectedIndex));
-	x2 = toScreenY(data.points(1,data.selectedIndex));
+      std::cout << "selectedIndex: "<< data.selectedIndex << std::endl;
+
+      // Convert the points to screen coordinates
+      x1 = toScreenX(data.points(0,data.selectedIndex));
+      x2 = toScreenY(data.points(1,data.selectedIndex));
       
-     
-	// Color the point based on it's label
-	ColorF labelColor = white;// data.colormap->getColor(data.labelIndex[data.labels(data.selectedIndex)]);
-	glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), 1.0);
-	
-	// Draw the point
-	glBegin(GL_POINTS);
-	glVertex2f(x1, x2);
-	glEnd();
+      // Color the point based on it's label
+      ColorF labelColor = white;// data.colormap->getColor(data.labelIndex[data.labels(data.selectedIndex)]);
+      glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), 1.0);
+      
+      // Draw the point
+      glBegin(GL_POINTS);
+      //  glVertex2f(x1, x2);
+      glEnd();
     }
 
   };

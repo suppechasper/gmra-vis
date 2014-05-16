@@ -147,6 +147,8 @@ public:
   int selectedNode;
   int selectedIndex;
 
+  ColorF selectedNodeColor;
+
   // Min/Max values for colormapping
   int minRatio, maxRatio;  
   double minEntropy, maxEntropy;
@@ -170,7 +172,7 @@ public:
        FortranLinalg::DenseMatrix<TPrecision> X,
        std::string colormapSchemeIn) 
    : tree(t), labels(l), points(X), maxScale(-1), 
-    selectedNode(-1), selectedIndex(-1), minRatio(1), maxRatio(1),
+    selectedNode(-1), selectedIndex(-1), selectedNodeColor(cyan1), minRatio(1), maxRatio(1),
     colormapScheme(colormapSchemeIn) {
    using namespace FortranLinalg;
 
