@@ -236,9 +236,20 @@ class TreeDEL : public DisplayElement{
       glPopName();         
       
       // If this node is the selected one, highlight it
-      if(data.selectedNode == dNode->getIndex()){
-	glLineWidth(2);
-	glColor3f(backgroundColor[0]+.1, backgroundColor[1]+.1, backgroundColor[2]+.1);
+      /* if(data.selectedNode == dNode->getIndex()){
+	glLineWidth(5.0);
+	glColor4f(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1.0);
+	glBegin(GL_LINE_LOOP);
+	glVertex2f(quads[0][0], quads[0][1]);
+	glVertex2f(quads[1][0], quads[1][1]);
+	glVertex2f(quads[2][0], quads[2][1]);
+	glVertex2f(quads[3][0], quads[3][1]);					
+	glEnd();  
+	
+	glLineWidth(3.0);
+	glColor4f(data.selectedNodeColor.r(), 
+		  data.selectedNodeColor.g(), 
+		  data.selectedNodeColor.b(), 1.0);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(quads[0][0], quads[0][1]);
 	glVertex2f(quads[1][0], quads[1][1]);
@@ -248,11 +259,11 @@ class TreeDEL : public DisplayElement{
 
 	selectedScale = node->getScale();
       }
-	
+      */
 
       
       // Save the selected node info
-      /*  if( node->ID  == data.selectedNode){
+      /* if( node->ID  == data.selectedNode){
 	selectedQ1[0] = node->quad1[0];
 	selectedQ1[1] = node->quad1[1];
 	selectedQ2[0] = node->quad2[0];
@@ -262,9 +273,9 @@ class TreeDEL : public DisplayElement{
 	selectedQ4[0] = node->quad4[0];
 	selectedQ4[1] = node->quad4[1];
 
-	selectedScale = node->getScale();
-	}*/
-
+	//	selectedScale = node->getScale();
+	}
+      */
       // Get the node's children
       std::vector< GMRANode<TPrecision>* > children = node->getChildren();
       for(typename std::vector< GMRANode<TPrecision> * >::iterator it =
@@ -289,7 +300,29 @@ class TreeDEL : public DisplayElement{
     */
     
     // Highlight the part of the tree selected
-    if(data.selectedNode != -1){  
+    if(data.selectedNode != -1){   // If this node is the selected one, highlight it
+     
+      DisplayNode * dNode = data.displayTree[data.selectedNode];
+      std::array<Vector2f, 4> quads = dNode->getQuads();
+      glLineWidth(3.0);
+      glColor4f(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1.0);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(quads[0][0], quads[0][1]);
+      glVertex2f(quads[1][0], quads[1][1]);
+      glVertex2f(quads[2][0], quads[2][1]);
+      glVertex2f(quads[3][0], quads[3][1]);					
+      glEnd();  
+      
+      glLineWidth(1.0);
+      glColor4f(data.selectedNodeColor.r(), 
+		data.selectedNodeColor.g(), 
+		data.selectedNodeColor.b(), 1.0);
+      glBegin(GL_LINE_LOOP);
+      glVertex2f(quads[0][0], quads[0][1]);
+      glVertex2f(quads[1][0], quads[1][1]);
+      glVertex2f(quads[2][0], quads[2][1]);
+      glVertex2f(quads[3][0], quads[3][1]);					
+      glEnd();  
 
       /*  std::list<GMRANode<TPrecision> *> nodesSelect;
       nodesSelect.push_back( (VisGMRANode<TPrecision> *) data.nodeMap[data.selectedNode]);
@@ -374,14 +407,14 @@ class TreeDEL : public DisplayElement{
         int tmp = selectBuf[3];
         if(tmp != -1){
           selected = tmp;
-	  data.selectedIndex = -1;
+	  //data.selectedIndex = -1;
         }
       }
       
       glMatrixMode(GL_PROJECTION);
       glPopMatrix();
       glutPostRedisplay();
-      data.setSelected( selected) ;    
+      data.setSelected( selected);
     }
   };
   

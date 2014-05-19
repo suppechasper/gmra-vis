@@ -113,20 +113,25 @@ public:
       }
     }
     if(data.selectedIndex != -1){
-
-      std::cout << "selectedIndex: "<< data.selectedIndex << std::endl;
-
+      
       // Convert the points to screen coordinates
       x1 = toScreenX(data.points(0,data.selectedIndex));
       x2 = toScreenY(data.points(1,data.selectedIndex));
-      
+     
+      std::cout << "selected index: " << data.selectedIndex << std::endl;
+      std::cout << "x, y: " << data.points(0,data.selectedIndex) << ", " << data.points(1,data.selectedIndex) << std::endl;
+      std::cout << "mouse: " << xM << ",  " << yM << std::endl;
+      std::cout << "xi,x2: " << x1 << ", " << x2 << std::endl;
+
+
+     
       // Color the point based on it's label
       ColorF labelColor = white;// data.colormap->getColor(data.labelIndex[data.labels(data.selectedIndex)]);
       glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), 1.0);
       
       // Draw the point
       glBegin(GL_POINTS);
-      //  glVertex2f(x1, x2);
+      glVertex2f(x1, x2);
       glEnd();
     }
 
@@ -232,7 +237,7 @@ public:
           }
         }
 
-        data.selectedIndex = selected;
+	data.selectedIndex = selected;
 
         glutPostRedisplay();
       }

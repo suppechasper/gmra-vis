@@ -20,9 +20,9 @@ class ZoomTreeDEL : public DisplayElement{
   int lw;
   int nScales;
   int selected;
-   
-  // The maximal & minimal width of the tree
-  double maxWidth, minWidth;
+  
+  // The minimal width of the tree
+  double minWidth, maxWidth;
 
   Data<TPrecision, LabelType> &data;
 
@@ -38,10 +38,19 @@ class ZoomTreeDEL : public DisplayElement{
       lw = 1;
       selected = -1;
       nScales = data.maxScale + 1;
+      init();
   };
-
+  
   //--- Initialize the tree ---//
-  void init(){};
+  void init(){
+    
+    VisGMRANode<TPrecision> *sNode = dynamic_cast<VisGMRANode<TPrecision>*>(data.tree.getRoot());
+
+    // Get the minimal and maximal width of a node
+    minWidth = 2.0;
+    	    
+
+  };
   
   //--- Set the position of the tree ---//
   void location(int xPos, int yPos, int w, int h){
@@ -85,6 +94,7 @@ class ZoomTreeDEL : public DisplayElement{
 
   //--- Check if the mouse is inside the tree ---//
   bool isInside(int x, int y){
+
     bool inside;
     if(vertical){
       inside = (x > yTop && x < (yTop+height) &&
@@ -113,26 +123,24 @@ class ZoomTreeDEL : public DisplayElement{
   //--- Display the scaled icicle tree ---//
   void display(void){
 
-    if(data.selectedNode != -1){      
-      glMatrixMode(GL_MODELVIEW); 	
-      glLoadIdentity();
-      
-      glLineWidth(lw);
+    if(data.selectedNode != -1){    
       
       // Get the selected node
-      VisGMRANode<TPrecision> *sNode = dynamic_cast<VisGMRANode<TPrecision>*>(data.nodeMap[data.selectedNode]);
+      VisGMRANode<TPrecision> *sNode = (VisGMRANode<TPrecision>*)(data.nodeMap[data.selectedNode]);
       std::list<GMRANode<TPrecision> *> nodes;
       nodes.push_back( sNode );    
            
-      // Get the minimal and maximal width of a node
-      minWidth = 2.0;
-      maxWidth = sNode->getPoints().size();      
-   
-      // The scale of this node
+      // The scale, width and position of the zoom tree
       int startScale = sNode->getScale();
+      maxWidth = sNode->getPoints().size();      
       int startX = sNode->xPos;
-	    
-      // Draw the arraw to the parent
+      
+      glMatrixMode(GL_MODELVIEW); 	
+      glLoadIdentity();
+      glLineWidth(lw);
+      
+     
+      // Draw the arraw to the parent, if we have one
       VisGMRANode<TPrecision> *pNode = dynamic_cast<VisGMRANode<TPrecision>*>(data.nodeMap[data.selectedNode]->getParent());
       if(pNode != NULL){
 	
@@ -144,10 +152,10 @@ class ZoomTreeDEL : public DisplayElement{
 	int scale = sNode->getScale()-startScale;
 	float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));   
 
-	// The starting xposition
+	// The starting x and y positions
 	int xStart = xLeft + (sNode->xPos-startX) / maxWidth * width;
 	double yStart = yTop + (nodeWidth*scale) + (lw*scale);
-	
+      	
 	// Scale width of node by the number of points in that node
 	double w = sNode->nPoints  / maxWidth;
 	double wnode = w*width;
@@ -162,12 +170,13 @@ class ZoomTreeDEL : public DisplayElement{
 	  glVertex2f(xStart + wnode, yStart -25);
 	  glVertex2f(xStart + wnode, yStart );
 	}
-	else{
-	  glVertex2f(yStart-2,             xStart);
-	  glVertex2f(yStart-2,             xStart + wnode);
-	  glVertex2f(yStart -15, xStart + wnode);
-	  glVertex2f(yStart -30, xStart + (wnode*.5));
-	  glVertex2f(yStart -15, xStart);
+	else{	 
+	  glVertex2f(yStart, xStart + (wnode*.5));
+	  glVertex2f(yStart +15, xStart + wnode);
+	  glVertex2f(yStart +30,             xStart + wnode);
+	  glVertex2f(yStart +30,            xStart);
+	  glVertex2f(yStart +15, xStart);
+ 	  
 	}      
 	glEnd();
 	glColor4f(0.25, 0.25, 0.25, 1.0);
@@ -179,21 +188,22 @@ class ZoomTreeDEL : public DisplayElement{
 	  glVertex2f(xStart + wnode, yStart );
 	}
 	else{
-	  glVertex2f(yStart-2,             xStart);
-	  glVertex2f(yStart-2,             xStart + wnode);
-	  glVertex2f(yStart -15, xStart + wnode);
-	  glVertex2f(yStart -30, xStart + (wnode*.5));
-	  glVertex2f(yStart -15, xStart);
+	  glVertex2f(yStart, xStart + (wnode*.5));
+	  glVertex2f(yStart +15, xStart + wnode);
+	  glVertex2f(yStart +30,             xStart + wnode);
+	  glVertex2f(yStart +30,            xStart);
+	  glVertex2f(yStart +15, xStart);
+ 
 	}      
 	glEnd();
-	glPopName();    
+	glPopName();   
       }
 
       while( !nodes.empty()){           
 	
-	VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );
-	nodes.pop_front();    
-	
+	VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( nodes.front() );  
+	nodes.pop_front();
+ 
 	// The scale of this node
 	int scale = node->getScale()-startScale;
 	float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));
@@ -204,7 +214,7 @@ class ZoomTreeDEL : public DisplayElement{
 	
 	// The starting xposition
 	int xStart = xLeft + (node->xPos-startX) / maxWidth * width;
-	double yStart = yTop + (nodeWidth*scale) + (lw*scale);
+	double yStart = yTop+30 + (nodeWidth*scale) + (lw*scale);
 
 	// Scale width of node by the number of points in that node
 	double w = node->nPoints  / maxWidth;
@@ -234,37 +244,8 @@ class ZoomTreeDEL : public DisplayElement{
 	  glVertex2f(yStart + nodeWidth, xStart);
 	}      
 	glEnd();
-	if(node->ID == data.selectedNode){
-
-	  glLineWidth(4.0);
-	  glBegin(GL_LINES);
-	  glColor4f(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1.0);
-	  glVertex2f(yStart,             xStart-2);
-	  glVertex2f(yStart,             xStart + wnode+2);
-	  glVertex2f(yStart + nodeWidth-2, xStart + wnode+2);
-	  glVertex2f(yStart + nodeWidth-2, xStart-2);
-	  glEnd();
-
-	  glLineWidth(2.0);
-	  glColor4f(data.selectedNodeColor.r(), data.selectedNodeColor.g(), data.selectedNodeColor.b(), 1.0);
-	  glBegin(GL_LINE_LOOP);
-	if(!vertical){
-	  glVertex2f(xStart,         yStart);
-	  glVertex2f(xStart,         yStart + nodeWidth);
-	  glVertex2f(xStart + wnode, yStart + nodeWidth);
-	  glVertex2f(xStart + wnode, yStart );
-	}
-	else{
-	  glVertex2f(yStart,             xStart-2);
-	  glVertex2f(yStart,             xStart + wnode+2);
-	  glVertex2f(yStart + nodeWidth-2, xStart + wnode+2);
-	  glVertex2f(yStart + nodeWidth-2, xStart-2);
-	}    
-	  glEnd();
-
-	
-	}
 	glPopName();    
+	  
 	
 	// Get the node's children
 	std::vector< GMRANode<TPrecision>* > children = node->getChildren();
@@ -273,11 +254,56 @@ class ZoomTreeDEL : public DisplayElement{
 	  nodes.push_back(*it);
 	}
       }
-      
-     
+      // Highlight the selected node
+      if(data.selectedNode != -1){
+
+	VisGMRANode<TPrecision> *node = dynamic_cast<VisGMRANode<TPrecision> *>( data.nodeMap[data.selectedNode] );  
+	
+	// The scale of this node
+	int scale = node->getScale()-startScale;
+	float nodeWidth = height * ((1.0 - scale/(double)nScales) - (1.0 - (scale+0.9)/nScales));
+	
+	// The starting xposition
+	int xStart = xLeft + (node->xPos-startX) / maxWidth * width;
+	double yStart = yTop+30 + (nodeWidth*scale) + (lw*scale);
+
+	// Scale width of node by the number of points in that node
+	double w = node->nPoints  / maxWidth;
+	double wnode = w*width;
+	wnode = wnode < minWidth ? minWidth : wnode;
+	
+	glLineWidth(3.0);
+	glBegin(GL_LINE_LOOP);
+	glColor4f(backgroundColor.r(), backgroundColor.g(), backgroundColor.b(), 1.0);
+	glVertex2f(yStart,             xStart);
+	glVertex2f(yStart,             xStart + wnode);
+	glVertex2f(yStart + nodeWidth, xStart + wnode);
+	glVertex2f(yStart + nodeWidth, xStart);
+	glEnd();
+	
+	glLineWidth(1.0);
+	glColor4f(data.selectedNodeColor.r(), 
+		  data.selectedNodeColor.g(), 
+		  data.selectedNodeColor.b(), 1.0);
+	glBegin(GL_LINE_LOOP);
+	if(!vertical){
+	  glVertex2f(xStart,         yStart);
+	  glVertex2f(xStart,         yStart + nodeWidth);
+	  glVertex2f(xStart + wnode, yStart + nodeWidth);
+	  glVertex2f(xStart + wnode, yStart );
+	}
+	else{
+	  glVertex2f(yStart,             xStart);
+	  glVertex2f(yStart,             xStart + wnode);
+	  glVertex2f(yStart + nodeWidth, xStart + wnode);
+	  glVertex2f(yStart + nodeWidth, xStart);
+	}    
+	glEnd();
+	
+      }
     }
   }
-  
+  //--- Event on mousing ---//
   void mouse(int button, int state, int x, int y){
     xM = x;
     yM = y;
@@ -288,12 +314,12 @@ class ZoomTreeDEL : public DisplayElement{
       mod = glutGetModifiers();
       
       GLint vp[4];
+      
       glGetIntegerv(GL_VIEWPORT, vp);
       GLuint selectBuf[BUFSIZE];
       glSelectBuffer(BUFSIZE, selectBuf);
       glRenderMode(GL_SELECT);
       glInitNames();
-
       glMatrixMode(GL_PROJECTION);
       glPushMatrix();
       glLoadIdentity();
@@ -301,13 +327,14 @@ class ZoomTreeDEL : public DisplayElement{
       glOrtho (0, vp[2], vp[3], 0, 0, 1);
       
       display();
-      GLint hits = glRenderMode(GL_RENDER);
+       GLint hits = glRenderMode(GL_RENDER);
       selected = -1;
+     
       for(int i=0; i<hits; i++){
-        int tmp = selectBuf[i*4 + 3];
+	 int tmp = selectBuf[i*4 + 3];
         if(tmp != -1){
           selected = tmp;
-	  data.selectedIndex = -1;
+	  //data.selectedIndex = -1;
         }
       }
       
@@ -321,9 +348,8 @@ class ZoomTreeDEL : public DisplayElement{
          data.setSelected(selected);
        }
       
-       glutPostRedisplay();      
+      glutPostRedisplay();      
       }
-  
     };
 
 

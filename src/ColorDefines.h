@@ -63,7 +63,9 @@ const ColorF envy             = ColorF(0.f, .8, 0.f);
 const ColorF flushMahogany    = ColorF(191/255.f, 58/255.f, 48/255.f);
 const ColorF hokeyPokey       = ColorF(191/255.f, 169/255.f, 48/255.f);
 const ColorF minsk            = ColorF(68/255.f, 43/255.f, 131/255.f);
-
+const ColorF steel            = ColorF(.4f, .4f, .4f);
+const ColorF aluminum         = ColorF(.6f, .6f, .6f);
+const ColorF silver           = ColorF(.8f, .8f, .8f);
 
 // HSV colors
 const ColorF green_hsv          = ColorF(125.0, 1.f, 1.f,   1.f);

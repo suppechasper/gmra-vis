@@ -172,7 +172,7 @@ public:
        FortranLinalg::DenseMatrix<TPrecision> X,
        std::string colormapSchemeIn) 
    : tree(t), labels(l), points(X), maxScale(-1), 
-    selectedNode(-1), selectedIndex(-1), selectedNodeColor(cyan1), minRatio(1), maxRatio(1),
+    selectedNode(-1), selectedIndex(-1), selectedNodeColor(white), minRatio(1), maxRatio(1),
     colormapScheme(colormapSchemeIn) {
    using namespace FortranLinalg;
 
@@ -354,6 +354,8 @@ public:
   
   //--- Set the selected node ---//
   void setSelected(int index){
+
+  
     using namespace FortranLinalg;
 
     selectedNode = index;
