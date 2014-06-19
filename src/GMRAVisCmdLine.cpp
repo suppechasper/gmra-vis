@@ -108,8 +108,8 @@ int main(int argc, char **argv){
   std::string treeFileName;
   std::string lFileName;
   std::string xFileName;
-  std::string colormap;
-  if(cArg.isSet()){
+  std::string colormap ="entropy";
+ if(cArg.isSet()){
     configFileName = cArg.getValue();
     std::ifstream infile(configFileName.c_str());
     std::string line;

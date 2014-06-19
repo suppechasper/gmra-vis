@@ -1,2 +1,0 @@
-/Users/kpotter/Code/MultiscaleScatter/gmra-vis/build/CMakeFiles/CreateIPCATree.dir
-/Users/kpotter/Code/MultiscaleScatter/gmra-vis/build/CMakeFiles/GMRAVis.dir
