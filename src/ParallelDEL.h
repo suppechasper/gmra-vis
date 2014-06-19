@@ -217,17 +217,18 @@ class ParallelDEL : public DisplayElement{
       }
       glEnd();
     }
+
+    // Draw the selected point
     if(data.selectedIndex != -1){
       glLineWidth(2);
       glBegin(GL_LINE_STRIP);
-      glColor3f(0.85, 0.0, 0.0);
+      ColorF labelColor = data.colormap->getColor(data.labelIndex[data.labels(data.selectedIndex)]);
+      glColor4f(labelColor.r(), labelColor.g(), labelColor.b(), 1.0);
       xStart = xLeft;
       int dims = data.points.M();
-      //  std::cout << "dims: " << dims << std::endl;
-
+    
       for(int i = 0; i < dims; i++){
 	float pt = data.points(i, data.selectedIndex);
-	//	std::cout << "pts: " << pt << std::endl;
 	float ptLocation = affine((float)data.minCent, pt, 
 				  (float)data.maxCent, yTop,yTop+height); 
 	glVertex2f(xStart, ptLocation);
