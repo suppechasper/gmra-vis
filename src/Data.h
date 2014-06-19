@@ -23,7 +23,6 @@ public:
   void setColor(ColorF col) { _color = col; }
   void setSelectecColor(ColorF col) { _selectedColor = col;}
   void setQuads(std::array<Vector2f, 4> q){ quads = q; }
-  
   int getIndex() { return nodeIndex; }
   std::array<Vector2f, 4> getQuads() { return quads; }
   ColorF getColor(){ return _color; }

@@ -120,7 +120,7 @@ class ParallelDEL : public DisplayElement{
       // Draw the individual principle components
       
       // Draw the + std dev
-      glLineWidth(1);
+       glLineWidth(1);
       for(int pc = 0; pc < sigma.N(); pc++){
       //for(int pc = 0; pc < 1; pc++){
       
@@ -144,6 +144,7 @@ class ParallelDEL : public DisplayElement{
 	glEnd();
       }
       
+
       // Draw the - std dev
        glLineWidth(1);
        for(int pc = 0; pc < sigma.N(); pc++){
@@ -171,7 +172,7 @@ class ParallelDEL : public DisplayElement{
 	}
 
       // Highlight +/- std dev
-      for(int pc = 0; pc < sigma.N(); pc++){
+           for(int pc = 0; pc < sigma.N(); pc++){
        // for(int pc = 0; pc < 1; pc++){
 	
 	// Get the #'s of sigmas we are interested in
@@ -201,7 +202,7 @@ class ParallelDEL : public DisplayElement{
 	  xStart += space;
 	}
 	glEnd();
-      }
+	}
 
       // Draw the central line
       glLineWidth(2);
@@ -215,6 +216,25 @@ class ParallelDEL : public DisplayElement{
 	xStart += space;
       }
       glEnd();
+    }
+    if(data.selectedIndex != -1){
+      glLineWidth(2);
+      glBegin(GL_LINE_STRIP);
+      glColor3f(0.85, 0.0, 0.0);
+      xStart = xLeft;
+      int dims = data.points.M();
+      //  std::cout << "dims: " << dims << std::endl;
+
+      for(int i = 0; i < dims; i++){
+	float pt = data.points(i, data.selectedIndex);
+	//	std::cout << "pts: " << pt << std::endl;
+	float ptLocation = affine((float)data.minCent, pt, 
+				  (float)data.maxCent, yTop,yTop+height); 
+	glVertex2f(xStart, ptLocation);
+	xStart += space;
+      }
+      glEnd();
+
     }
   }
 

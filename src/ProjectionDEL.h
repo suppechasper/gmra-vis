@@ -112,7 +112,7 @@ public:
 	glEnd();
       }
     }
-    if(data.selectedIndex != -1){
+    /*if(data.selectedIndex != -1){
       
       // Convert the points to screen coordinates
       x1 = toScreenX(data.points(0,data.selectedIndex));
@@ -133,7 +133,7 @@ public:
       glBegin(GL_POINTS);
       glVertex2f(x1, x2);
       glEnd();
-    }
+      }*/
 
   };
   
